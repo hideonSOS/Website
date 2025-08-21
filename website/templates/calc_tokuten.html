@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <title>Chart.js バーチャート</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+    }
+    #chart-container {
+      width: 100%;
+      height: 100%;
+      padding-bottom: 68px; /* フッター分の余白 */
+      box-sizing: border-box;
+    }
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+    #footer-buttons {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.75);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+    }
+    .mini-btn {
+      font-size: 12px; padding: 8px 10px;
+      color: #fff; background: #1f2937;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; cursor: pointer;
+      transition: transform 0.1s ease, background 0.2s ease;
+    }
+    .mini-btn:hover { background: #374151; border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
+    .mini-btn:active { transform: translateY(0); }
+
+    /* 入力ボックス */
+    .mini-input {
+      width: 88px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #fff;
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mini-input::placeholder { color: rgba(255,255,255,0.6); }
+    .mini-input:focus {
+      border-color: rgba(255,255,255,0.35);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <div id="footer-buttons">
+    <button id="sort-asc"  class="mini-btn">昇順</button>
+    <button id="sort-desc" class="mini-btn">降順</button>
+
+    <!-- 小数点第2位まで入力可能 -->
+    <input id="threshold-input" class="mini-input" type="number" step="0.01" placeholder="基準値" aria-label="基準線の値" />
+
+    <button id="toggle-avg" class="mini-btn">平均線</button>
+    <button class="mini-btn" disabled>ズーム</button>
+    <button class="mini-btn" disabled>ラベル</button>
+    <button class="mini-btn" disabled>DL</button>
+    <button class="mini-btn" disabled>リセット</button>
+  </div>
+
+  <script>
+    // データ生成
+    const labels = Array.from({length: 70}, (_, i) => `項目${i+1}`);
+    const data = Array.from({length: 70}, () => Math.floor(Math.random() * 100));
+
+    const ctx = document.getElementById('myChart');
+    const myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: '得点率ランキング',
+          data,
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: '#fff',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#fff' } },
+          title: { display: true, text: '縦棒グラフ (70項目)', color: '#fff' },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#fff', maxRotation: 90, minRotation: 90, autoSkip: false, font: { size: 8 } },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          },
+          y: {
+            ticks: { color: '#fff', font: { size: 10 } },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          }
+        }
+      }
+    });
+
+    // 並び替え
+    function sortChart(ascending = true) {
+      const combined = myChart.data.labels.map((label, i) => ({
+        label, value: myChart.data.datasets[0].data[i]
+      }));
+      combined.sort((a, b) => ascending ? (a.value - b.value) : (b.value - a.value));
+      myChart.data.labels = combined.map(item => item.label);
+      myChart.data.datasets[0].data = combined.map(item => item.value);
+
+      // 基準線の再描画
+      const thrIdx = findDataset(ds => ds._isThresholdLine === true);
+      if (thrIdx !== -1) {
+        const val = myChart.data.datasets[thrIdx]._thresholdValue;
+        myChart.data.datasets[thrIdx].data = Array(myChart.data.labels.length).fill(val);
+      }
+      myChart.update();
+    }
+
+    // 平均線
+    function computeAverage(arr) {
+      if (!arr.length) return 0;
+      return arr.reduce((s, v) => s + v, 0) / arr.length;
+    }
+    function findDataset(pred) {
+      return myChart.data.datasets.findIndex(pred);
+    }
+    function toggleAverageLine() {
+      const idx = findDataset(ds => ds._isAvgLine === true);
+      if (idx !== -1) {
+        myChart.data.datasets.splice(idx, 1);
+      } else {
+        const avg = computeAverage(myChart.data.datasets[0].data);
+        myChart.data.datasets.push({
+          type: 'line',
+          label: '平均線',
+          data: Array(myChart.data.labels.length).fill(avg),
+          borderColor: '#ffcc00',
+          borderWidth: 2,
+          pointRadius: 0,
+          borderDash: [6, 4],
+          tension: 0,
+          _isAvgLine: true
+        });
+      }
+      myChart.update();
+    }
+
+    // 入力値の基準線
+    function setOrUpdateThresholdLine(value) {
+      const num = Number(value);
+      const idx = findDataset(ds => ds._isThresholdLine === true);
+
+      if (!value?.toString().trim() || Number.isNaN(num)) {
+        if (idx !== -1) myChart.data.datasets.splice(idx, 1);
+        myChart.update();
+        return;
+      }
+
+      // 小数第2位に丸める
+      const rounded = Math.round(num * 100) / 100;
+      const lineData = Array(myChart.data.labels.length).fill(rounded);
+
+      if (idx !== -1) {
+        const ds = myChart.data.datasets[idx];
+        ds.data = lineData;
+        ds._thresholdValue = rounded;
+      } else {
+        myChart.data.datasets.push({
+          type: 'line',
+          label: '基準線',
+          data: lineData,
+          borderColor: '#00e5ff',
+          borderWidth: 2,
+          pointRadius: 0,
+          borderDash: [2, 2],
+          tension: 0,
+          _isThresholdLine: true,
+          _thresholdValue: rounded
+        });
+      }
+      myChart.update();
+    }
+
+    // イベント割り当て
+    document.getElementById('sort-asc').addEventListener('click', () => sortChart(true));
+    document.getElementById('sort-desc').addEventListener('click', () => sortChart(false));
+    document.getElementById('toggle-avg').addEventListener('click', toggleAverageLine);
+
+    const thrInput = document.getElementById('threshold-input');
+    thrInput.addEventListener('input', (e) => setOrUpdateThresholdLine(e.target.value));
+    thrInput.addEventListener('change', (e) => setOrUpdateThresholdLine(e.target.value));
+  </script>
+</body>
+</html>

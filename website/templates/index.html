@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>業務アプリ アクアライブステーション</title>
+  <style>
+    body { margin:0; font-family: sans-serif; background:#000; color:#fff; }
+    header, nav, footer { padding:20px; border-bottom:1px solid #1e90ff; }
+    header { background:#000; }
+    header h1 { margin:0; font-size:24px; }
+    header p { margin:5px 0 0; color:#87cefa; }
+
+    nav { background:#000; border-bottom:1px solid #1e90ff; }
+    nav ul { list-style:none; margin:0; padding:0; display:flex; gap:20px; }
+    nav a { color:#1e90ff; text-decoration:none; font-weight:bold; }
+    nav a:hover { text-decoration:underline; }
+
+    footer { background:#000; text-align:center; font-size:14px; border-top:1px solid #1e90ff; }
+    footer p { margin:10px 0; color:#87cefa; }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header>
+    <h1>アクアライブステーション（業務アプリ）</h1>
+    <p>関係者用</p>
+  </header>
+
+  <!-- ナビゲーション -->
+  <nav>
+    <ul>
+      <li><a href= "{% url 'website:calc_tokuten' %}">ホーム</a></li>
+      <li><a href="#">得点率計算</a></li>
+      <li><a href="#">機能１</a></li>
+      <li><a href="#">機能２</a></li>
+      <li><a href="#">機能３</a></li>
+    </ul>
+  </nav>
+
+  <!-- フッター -->
+  <footer>
+    <p>&copy; 2025 Internal Business Apps</p>
+  </footer>
+</body>
+</html>
