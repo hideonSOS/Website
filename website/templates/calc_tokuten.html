@@ -85,21 +85,21 @@
   </div>
 
   <script>
-    // データ生成
-    const labels = Array.from({length: 70}, (_, i) => `項目${i+1}`);
-    const data = Array.from({length: 70}, () => Math.floor(Math.random() * 100));
+    const labels = {{ chart_labels|safe }};   // 選手名のリスト
+    const data   = {{ chart_values|safe }};   // 得点率のリスト
 
     const ctx = document.getElementById('myChart');
     const myChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels,
+        labels: labels,
         datasets: [{
           label: '得点率ランキング',
-          data,
+          data: data,
           backgroundColor: 'rgba(54, 162, 235, 0.7)',
           borderColor: '#fff',
-          borderWidth: 1
+          borderWidth: 1,
+          barThickness: 20
         }]
       },
       options: {
@@ -107,12 +107,12 @@
         maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: '#fff' } },
-          title: { display: true, text: '縦棒グラフ (70項目)', color: '#fff' },
+          title: { display: true, text: '選手別 得点率ランキング', color: '#fff' },
           tooltip: { mode: 'index', intersect: false }
         },
         scales: {
           x: {
-            ticks: { color: '#fff', maxRotation: 90, minRotation: 90, autoSkip: false, font: { size: 8 } },
+            ticks: { color: '#fff', maxRotation: 90, minRotation: 90, font: { size: 18 } },
             grid: { color: 'rgba(255,255,255,0.1)' }
           },
           y: {
