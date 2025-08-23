@@ -62,6 +62,13 @@
       border-color: rgba(255,255,255,0.35);
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
+
+    /* ★スマホ向け調整 */
+    @media (max-width: 600px) {
+      #chart-container { padding-bottom: 84px; }  /* フッターに少し余裕 */
+      .mini-btn { font-size: 11px; padding: 6px 8px; border-radius: 6px; }
+      .mini-input { width: 76px; font-size: 11px; padding: 6px 8px; border-radius: 6px; }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -112,7 +119,19 @@
         },
         scales: {
           x: {
-            ticks: { color: '#fff', maxRotation: 90, minRotation: 90, font: { size: 18 } },
+            ticks: {
+              color: '#fff',
+              maxRotation: 90,
+              minRotation: 90,
+              font: { size: 18 },
+              // ★長い名前を省略（スマホで効く）
+              callback: function(value) {
+                const label = (typeof value === 'string')
+                  ? value
+                  : (this.getLabelForValue ? this.getLabelForValue(value) : String(value));
+                return (label && label.length > 6) ? label.slice(0, 6) + '…' : label;
+              }
+            },
             grid: { color: 'rgba(255,255,255,0.1)' }
           },
           y: {
@@ -122,6 +141,41 @@
         }
       }
     });
+
+    // ★レスポンシブ調整（棒太さ・余白・フォント）
+    const MOBILE_BP = 600;
+    function applyResponsiveOptions() {
+      const isMobile = window.innerWidth <= MOBILE_BP;
+
+      const bar = myChart.data.datasets[0]; // 棒グラフのデータセット
+      // 棒の太さを調整（上限も設定）
+      bar.barThickness       = isMobile ? 8  : 20;
+      bar.maxBarThickness    = isMobile ? 10 : 24;
+      // 横方向の詰め具合（1に近いほど太くなる）
+      bar.categoryPercentage = isMobile ? 0.6 : 0.8;
+      bar.barPercentage      = isMobile ? 0.8 : 0.9;
+
+      // タイトル/凡例
+      myChart.options.plugins.title.font  = { size: isMobile ? 14 : 18 };
+      myChart.options.plugins.legend.labels.font = { size: isMobile ? 10 : 12 };
+
+      // 目盛りラベル
+      myChart.options.scales.x.ticks.font = { size: isMobile ? 10 : 18 };
+      myChart.options.scales.x.ticks.maxRotation = isMobile ? 60 : 90;
+      myChart.options.scales.x.ticks.minRotation = isMobile ? 60 : 90;
+      myChart.options.scales.y.ticks.font = { size: isMobile ? 9 : 12 };
+
+      // 基準線や平均線の見やすさも微調整
+      myChart.data.datasets.forEach(ds => {
+        if (ds._isThresholdLine || ds._isAvgLine) {
+          ds.borderWidth = isMobile ? 1.5 : 2;
+        }
+      });
+
+      myChart.update();
+    }
+    applyResponsiveOptions();
+    window.addEventListener('resize', applyResponsiveOptions);
 
     // 並び替え
     function sortChart(ascending = true) {
