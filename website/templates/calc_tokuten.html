@@ -6,71 +6,34 @@
   <meta name="theme-color" content="#000000" />
   <title>Chart.js バーチャート</title>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: #000;
-      color: #fff;
-      font-family: system-ui, sans-serif;
-    }
-    #chart-container {
-      width: 100%;
-      height: 100%;
-      padding-bottom: 68px; /* フッター分の余白 */
-      box-sizing: border-box;
-    }
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
-    }
+    html, body { height:100%; margin:0; padding:0; background:#000; color:#fff; font-family:system-ui,sans-serif; }
+    #chart-container { width:100%; height:100%; padding-bottom:68px; box-sizing:border-box; }
+    canvas { width:100% !important; height:100% !important; display:block; }
     #footer-buttons {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      padding: 8px 10px;
-      background: rgba(0,0,0,0.75);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-      backdrop-filter: blur(4px);
-      z-index: 1000;
+      position:fixed; left:0; right:0; bottom:0; padding:8px 10px; background:rgba(0,0,0,.75);
+      border-top:1px solid rgba(255,255,255,.1); display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+      backdrop-filter:blur(4px); z-index:1000;
     }
-    .mini-btn {
-      font-size: 12px; padding: 8px 10px;
-      color: #fff; background: #1f2937;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px; cursor: pointer;
-      transition: transform 0.1s ease, background 0.2s ease;
-    }
-    .mini-btn:hover { background: #374151; border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
-    .mini-btn:active { transform: translateY(0); }
-
-    /* 入力ボックス */
+    .mini-btn { font-size:12px; padding:8px 10px; color:#fff; background:#1f2937; border:1px solid rgba(255,255,255,.15); border-radius:8px; cursor:pointer; transition:.1s; }
+    .mini-btn:hover { background:#374151; border-color:rgba(255,255,255,.25); transform:translateY(-1px); }
+    .mini-btn:active { transform:translateY(0); }
     .mini-input {
-      width: 88px;
-      padding: 8px 10px;
-      font-size: 12px;
-      color: #fff;
-      background: #0f172a;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      width:88px; padding:8px 10px; font-size:12px; color:#fff; background:#0f172a; border:1px solid rgba(255,255,255,.15);
+      border-radius:8px; outline:none; transition:.2s;
     }
-    .mini-input::placeholder { color: rgba(255,255,255,0.6); }
-    .mini-input:focus {
-      border-color: rgba(255,255,255,0.35);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
-    }
-
-    /* ★スマホ向け調整 */
-    @media (max-width: 600px) {
-      #chart-container { padding-bottom: 84px; }  /* フッターに少し余裕 */
-      .mini-btn { font-size: 11px; padding: 6px 8px; border-radius: 6px; }
-      .mini-input { width: 76px; font-size: 11px; padding: 6px 8px; border-radius: 6px; }
-    }
+    .mini-input::placeholder { color:rgba(255,255,255,.6); }
+    .mini-input:focus { border-color:rgba(255,255,255,.35); box-shadow:0 0 0 3px rgba(255,255,255,.08); }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ★ バーの見た目だけを全体に適用（データは不変） -->
+  <script>
+    Chart.defaults.elements.bar.borderWidth = 0.6;
+    Chart.defaults.elements.bar.borderColor = 'rgba(255,255,255,0.6)';
+    Chart.defaults.elements.bar.backgroundColor = 'rgba(54, 162, 235, 0.7)';
+    Chart.defaults.elements.bar.borderRadius = 2;
+    Chart.defaults.elements.bar.borderSkipped = false;
+  </script>
 </head>
 <body>
   <div id="chart-container">
@@ -80,10 +43,7 @@
   <div id="footer-buttons">
     <button id="sort-asc"  class="mini-btn">昇順</button>
     <button id="sort-desc" class="mini-btn">降順</button>
-
-    <!-- 小数点第2位まで入力可能 -->
     <input id="threshold-input" class="mini-input" type="number" step="0.01" placeholder="基準値" aria-label="基準線の値" />
-
     <button id="toggle-avg" class="mini-btn">平均線</button>
     <button class="mini-btn" disabled>ズーム</button>
     <button class="mini-btn" disabled>ラベル</button>
@@ -91,22 +51,32 @@
     <button class="mini-btn" disabled>リセット</button>
   </div>
 
+  <!-- ★ Django からの配列を安全に埋め込み（ここは your view が渡す変数名に合わせてください） -->
+  {{ chart_labels|json_script:"labels-json" }}
+  {{ chart_values|json_script:"values-json" }}
+
   <script>
-    const labels = {{ chart_labels|safe }};   // 選手名のリスト
-    const data   = {{ chart_values|safe }};   // 得点率のリスト
+    // ★ ここでだけ Django のデータを取得（デモ配列は置かない！）
+    const labels = JSON.parse(document.getElementById('labels-json').textContent);
+    const data   = JSON.parse(document.getElementById('values-json').textContent);
 
     const ctx = document.getElementById('myChart');
     const myChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: labels,
+        labels,
         datasets: [{
           label: '得点率ランキング',
           data: data,
+          // ★ バー見た目の最小調整（データは触らない）
+          categoryPercentage: 0.82,
+          barPercentage: 0.90,
+          maxBarThickness: 10,
+          borderWidth: 0.6,
+          borderColor: 'rgba(255,255,255,0.6)',
           backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: '#fff',
-          borderWidth: 1,
-          barThickness: 20
+          borderRadius: 2,
+          borderSkipped: false
         }]
       },
       options: {
@@ -114,24 +84,12 @@
         maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: '#fff' } },
-          title: { display: true, text: '選手別 得点率ランキング', color: '#fff' },
+          title: { display: true, text: '縦棒グラフ', color: '#fff' },
           tooltip: { mode: 'index', intersect: false }
         },
         scales: {
           x: {
-            ticks: {
-              color: '#fff',
-              maxRotation: 90,
-              minRotation: 90,
-              font: { size: 18 },
-              // ★長い名前を省略（スマホで効く）
-              callback: function(value) {
-                const label = (typeof value === 'string')
-                  ? value
-                  : (this.getLabelForValue ? this.getLabelForValue(value) : String(value));
-                return (label && label.length > 6) ? label.slice(0, 6) + '…' : label;
-              }
-            },
+            ticks: { color: '#fff', maxRotation: 90, minRotation: 90, autoSkip: false, font: { size: 8 } },
             grid: { color: 'rgba(255,255,255,0.1)' }
           },
           y: {
@@ -142,51 +100,16 @@
       }
     });
 
-    // ★レスポンシブ調整（棒太さ・余白・フォント）
-    const MOBILE_BP = 600;
-    function applyResponsiveOptions() {
-      const isMobile = window.innerWidth <= MOBILE_BP;
+    // ------ 以下は既存の機能（データは変更しない） ------
+    function findDataset(pred) { return myChart.data.datasets.findIndex(pred); }
+    function computeAverage(arr){ return arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0; }
 
-      const bar = myChart.data.datasets[0]; // 棒グラフのデータセット
-      // 棒の太さを調整（上限も設定）
-      bar.barThickness       = isMobile ? 8  : 20;
-      bar.maxBarThickness    = isMobile ? 10 : 24;
-      // 横方向の詰め具合（1に近いほど太くなる）
-      bar.categoryPercentage = isMobile ? 0.6 : 0.8;
-      bar.barPercentage      = isMobile ? 0.8 : 0.9;
-
-      // タイトル/凡例
-      myChart.options.plugins.title.font  = { size: isMobile ? 14 : 18 };
-      myChart.options.plugins.legend.labels.font = { size: isMobile ? 10 : 12 };
-
-      // 目盛りラベル
-      myChart.options.scales.x.ticks.font = { size: isMobile ? 10 : 18 };
-      myChart.options.scales.x.ticks.maxRotation = isMobile ? 60 : 90;
-      myChart.options.scales.x.ticks.minRotation = isMobile ? 60 : 90;
-      myChart.options.scales.y.ticks.font = { size: isMobile ? 9 : 12 };
-
-      // 基準線や平均線の見やすさも微調整
-      myChart.data.datasets.forEach(ds => {
-        if (ds._isThresholdLine || ds._isAvgLine) {
-          ds.borderWidth = isMobile ? 1.5 : 2;
-        }
-      });
-
-      myChart.update();
-    }
-    applyResponsiveOptions();
-    window.addEventListener('resize', applyResponsiveOptions);
-
-    // 並び替え
     function sortChart(ascending = true) {
-      const combined = myChart.data.labels.map((label, i) => ({
-        label, value: myChart.data.datasets[0].data[i]
-      }));
-      combined.sort((a, b) => ascending ? (a.value - b.value) : (b.value - a.value));
-      myChart.data.labels = combined.map(item => item.label);
-      myChart.data.datasets[0].data = combined.map(item => item.value);
+      const combined = myChart.data.labels.map((label, i) => ({ label, value: myChart.data.datasets[0].data[i] }));
+      combined.sort((a,b)=> ascending ? (a.value-b.value) : (b.value-a.value));
+      myChart.data.labels = combined.map(i=>i.label);
+      myChart.data.datasets[0].data = combined.map(i=>i.value);
 
-      // 基準線の再描画
       const thrIdx = findDataset(ds => ds._isThresholdLine === true);
       if (thrIdx !== -1) {
         const val = myChart.data.datasets[thrIdx]._thresholdValue;
@@ -195,14 +118,6 @@
       myChart.update();
     }
 
-    // 平均線
-    function computeAverage(arr) {
-      if (!arr.length) return 0;
-      return arr.reduce((s, v) => s + v, 0) / arr.length;
-    }
-    function findDataset(pred) {
-      return myChart.data.datasets.findIndex(pred);
-    }
     function toggleAverageLine() {
       const idx = findDataset(ds => ds._isAvgLine === true);
       if (idx !== -1) {
@@ -210,61 +125,43 @@
       } else {
         const avg = computeAverage(myChart.data.datasets[0].data);
         myChart.data.datasets.push({
-          type: 'line',
-          label: '平均線',
+          type: 'line', label: '平均線',
           data: Array(myChart.data.labels.length).fill(avg),
-          borderColor: '#ffcc00',
-          borderWidth: 2,
-          pointRadius: 0,
-          borderDash: [6, 4],
-          tension: 0,
+          borderColor: '#ffcc00', borderWidth: 2, pointRadius: 0, borderDash:[6,4], tension: 0,
           _isAvgLine: true
         });
       }
       myChart.update();
     }
 
-    // 入力値の基準線
     function setOrUpdateThresholdLine(value) {
       const num = Number(value);
       const idx = findDataset(ds => ds._isThresholdLine === true);
 
       if (!value?.toString().trim() || Number.isNaN(num)) {
         if (idx !== -1) myChart.data.datasets.splice(idx, 1);
-        myChart.update();
-        return;
+        myChart.update(); return;
       }
 
-      // 小数第2位に丸める
       const rounded = Math.round(num * 100) / 100;
       const lineData = Array(myChart.data.labels.length).fill(rounded);
 
       if (idx !== -1) {
         const ds = myChart.data.datasets[idx];
-        ds.data = lineData;
-        ds._thresholdValue = rounded;
+        ds.data = lineData; ds._thresholdValue = rounded;
       } else {
         myChart.data.datasets.push({
-          type: 'line',
-          label: '基準線',
-          data: lineData,
-          borderColor: '#00e5ff',
-          borderWidth: 2,
-          pointRadius: 0,
-          borderDash: [2, 2],
-          tension: 0,
-          _isThresholdLine: true,
-          _thresholdValue: rounded
+          type:'line', label:'基準線', data: lineData,
+          borderColor:'#00e5ff', borderWidth:2, pointRadius:0, borderDash:[2,2], tension:0,
+          _isThresholdLine:true, _thresholdValue: rounded
         });
       }
       myChart.update();
     }
 
-    // イベント割り当て
     document.getElementById('sort-asc').addEventListener('click', () => sortChart(true));
     document.getElementById('sort-desc').addEventListener('click', () => sortChart(false));
     document.getElementById('toggle-avg').addEventListener('click', toggleAverageLine);
-
     const thrInput = document.getElementById('threshold-input');
     thrInput.addEventListener('input', (e) => setOrUpdateThresholdLine(e.target.value));
     thrInput.addEventListener('change', (e) => setOrUpdateThresholdLine(e.target.value));
