@@ -229,7 +229,7 @@
           const racer  = p.racer || "";  // ★追加
           const when = fmtDateTime(p.created_at);
           const sched = p.scheduled_at || "";
-          meta.textContent =`${author}` +(racer ? ` ／ 🏁 ${racer}` : "") +(sched ? ` ／ 🗓 ${sched}` : "");
+          meta.textContent =(author ? `投稿者 ${author}`:"") +(racer ? ` ／ 使用選手 ${racer}` : "") +(sched ? ` ／ 投稿日 ${sched}` : "");
           const content = document.createElement("div"); content.className = "content";
           content.textContent = p.content || "";
           // ★削除ボタン
