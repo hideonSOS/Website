@@ -88,19 +88,19 @@
       <form id="postForm" class="postForm" novalidate>
         <div class="row">
           <label for="authorInput">投稿者</label>
-          <input type="text" id="authorInput" placeholder="例：松山" autocomplete="name" />
+          <input type="text" id="authorInput" placeholder="投稿者・発言者を入力 ※ 例：松山秀夫 or 実際の使用選手のコメント等" autocomplete="name" />
         </div>
         <div class="row">
           <div class="row">
             <label for="titleInput">レーサー名</label>
-            <input type="text" id="titleInput" maxlength="10" placeholder="10文字以内" />
+            <input type="text" id="titleInput" maxlength="10" placeholder="モーター使用選手を入力" />
           </div>
           <label for="dateInput">入力日</label>
           <input type="date" id="dateInput" />
         </div>
         <div class="row">
           <label for="contentInput">コメント</label>
-          <textarea id="contentInput" placeholder="メモ・報告など" required></textarea>
+          <textarea id="contentInput" placeholder="モーターに関する情報を入力" required></textarea>
         </div>
         <div class="row right">
           <button type="submit" id="submitPost">投稿</button>
@@ -110,7 +110,7 @@
       <div id="postsList" class="postsList" aria-live="polite"></div>
     </div>
     <div class="modalFoot">
-      <a id="openPageLink" href="#" target="_blank" rel="noopener">別ページで開く</a>
+      <a id="openPageLink" href="#" target="_blank" rel="noopener">開発中</a>
       <button id="closeDialog" type="button">閉じる</button>
     </div>
   </dialog>
