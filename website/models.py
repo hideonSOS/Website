@@ -9,6 +9,7 @@ class Post(models.Model):
 class MotorComment(models.Model):
     machine_no  = models.PositiveIntegerField(db_index=True)   # 号機番号
     author      = models.CharField(max_length=50, blank=True, default="匿名")
+    racer = models.CharField(max_length=10, null=True, blank=True)
     content     = models.TextField()                           # 本文（必須）
     scheduled_at= models.DateField(null=True, blank=True)      # 入力された日程（任意）
     created_at  = models.DateTimeField(auto_now_add=True)      # 生成日時

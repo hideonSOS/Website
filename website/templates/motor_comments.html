@@ -91,11 +91,15 @@
           <input type="text" id="authorInput" placeholder="例：松山" autocomplete="name" />
         </div>
         <div class="row">
-          <label for="dateInput">日程</label>
+          <div class="row">
+            <label for="titleInput">レーサー名</label>
+            <input type="text" id="titleInput" maxlength="10" placeholder="10文字以内" />
+          </div>
+          <label for="dateInput">入力日</label>
           <input type="date" id="dateInput" />
         </div>
         <div class="row">
-          <label for="contentInput">本文</label>
+          <label for="contentInput">コメント</label>
           <textarea id="contentInput" placeholder="メモ・報告など" required></textarea>
         </div>
         <div class="row right">
@@ -222,9 +226,10 @@
           const card = document.createElement("div"); card.className = "postCard";
           const meta = document.createElement("div"); meta.className = "meta";
           const author = p.author || "匿名";
+          const racer  = p.racer || "";  // ★追加
           const when = fmtDateTime(p.created_at);
           const sched = p.scheduled_at || "";
-          meta.textContent = `${author} ・ ${sched ? `🗓 ${sched} ／ ` : ""}${when}`;
+          meta.textContent =`${author}` +(racer ? ` ／ 🏁 ${racer}` : "") +(sched ? ` ／ 🗓 ${sched}` : "");
           const content = document.createElement("div"); content.className = "content";
           content.textContent = p.content || "";
           // ★削除ボタン
@@ -252,6 +257,7 @@
     function bindPostForm(){
       const form = document.getElementById("postForm");
       const authorInput = document.getElementById("authorInput");
+      const racerInput = document.getElementById("titleInput");
       const contentInput = document.getElementById("contentInput");
       const dateInput = document.getElementById("dateInput");
       if(!form) return;
@@ -261,6 +267,7 @@
         assertCSRF();
         const payload = {
           author: (authorInput?.value || "").trim() || "匿名",
+          racer: (racerInput?.value || "").trim(), 
           content: (contentInput?.value || "").trim(),
           scheduled_at: (dateInput?.value) ? dateInput.value : null
         };
@@ -272,6 +279,7 @@
         try{
           await createPost(currentMachine, payload);
           if(contentInput) contentInput.value = "";
+          if(racerInput) racerInput.value = "";
           await loadPostsIntoList(currentMachine);
         }catch(e){
           // createPost でアラート済み

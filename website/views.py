@@ -81,6 +81,7 @@ class MotorCommentListCreateAPI(View):
             {
                 "id": c.id,
                 "author": c.author or "匿名",
+                "racer": c.racer or "",     # ★追加
                 "content": c.content,
                 "scheduled_at": c.scheduled_at.isoformat() if c.scheduled_at else None,
                 "created_at": c.created_at.isoformat(),
@@ -101,9 +102,10 @@ class MotorCommentListCreateAPI(View):
             return HttpResponseBadRequest("content is required")
 
         author = (payload.get("author") or "匿名").strip() or "匿名"
+        racer = (payload.get("racer") or "").strip() 
         scheduled = payload.get("scheduled_at")  # "YYYY-MM-DD" 想定
 
-        obj = MotorComment(machine_no=machine_no, author=author, content=content)
+        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer)
         if scheduled:
             try:
                 obj.scheduled_at = date.fromisoformat(scheduled)
@@ -115,6 +117,7 @@ class MotorCommentListCreateAPI(View):
         return JsonResponse({
             "id": obj.id,
             "author": obj.author,
+            "racer": obj.racer, 
             "content": obj.content,
             "scheduled_at": obj.scheduled_at.isoformat() if obj.scheduled_at else None,
             "created_at": obj.created_at.isoformat(),
