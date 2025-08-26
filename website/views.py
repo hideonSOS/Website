@@ -22,6 +22,10 @@ class Motor_Comments(TemplateView):
 class IndexView(TemplateView):
     template_name = "index.html"
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class Calendar(TemplateView):
+    template_name = "calendar.html"
+
 class CalcTokutenView(TemplateView):
     template_name = "calc_tokuten.html"
     def get_context_data(self, **kwargs):

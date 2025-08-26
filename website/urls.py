@@ -1,7 +1,7 @@
 # website/urls.py
 from django.urls import path
 from .views import (
-    IndexView, CalcTokutenView, GalleryView,
+    IndexView, CalcTokutenView, GalleryView,Calendar,
     PostDeleteView, PostCreateView,
     Motor_Comments,
     MotorCommentListCreateAPI,
@@ -14,6 +14,7 @@ urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("calc-tokuten/", CalcTokutenView.as_view(), name="calc_tokuten"),
     path("gallery/", GalleryView.as_view(), name="gallery"),
+    path("calendar/", Calendar.as_view(), name="calendar"),
     path("post/new/", PostCreateView.as_view(), name="post_new"),
     path("post/<int:pk>/delete/", PostDeleteView.as_view(), name="post_delete"),
 
