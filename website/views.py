@@ -30,7 +30,6 @@ class CalcTokutenView(TemplateView):
         # 例: "得点率" 列をリスト化
         context["chart_labels"] = df["選手名"].tolist()   # 横軸ラベル
         context["chart_values"] = df["得点率"].tolist() # 縦棒の値
-        print(context)
         return context
 
 

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover" />
   <title>100個の正方形グリッド</title>
   <style>
     :root{
@@ -65,7 +65,7 @@
     .postForm label{ font-size:12px; color:#9ca3af; }
     .postForm input, .postForm textarea{ background:#0f172a; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 12px; outline:none; }
     .postForm textarea{ min-height:80px; resize:vertical; }
-    .postForm button{ background:#0f172a; color:#e5e7eb; border:1px solid #334155; padding:8px 12px; border-radius:10px; }
+    .postForm button{ font-size:16px; background:#0f172a; color:#e5e7eb; border:1px solid #334155; padding:8px 12px; border-radius:10px; }
     .postForm button:hover{ background:#111827; }
 
     /* 日付入力（カレンダー）をダークでも見やすく */
@@ -73,7 +73,10 @@
     .postForm input[type="date"]::-webkit-calendar-picker-indicator{
       filter: invert(78%) sepia(24%) saturate(1000%) hue-rotate(145deg) brightness(110%) contrast(100%);
       cursor:pointer;
-    }
+      
+      /* iOS向けの追加ガード（WebKit判定） */
+
+}
   </style>
 </head>
 <body>
@@ -332,6 +335,9 @@
       });
       assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
     })();
+
+
+    
   </script>
 </body>
 </html>
