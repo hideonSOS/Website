@@ -8,7 +8,7 @@ from .models import Post, MotorComment
 from .forms import PostForm
 from django.views import View
 from .scrape1 import scrape
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse,HttpResponseNotFound
 import json
 from datetime import date
 from django.shortcuts import get_object_or_404
@@ -37,7 +37,7 @@ class CalcTokutenView(TemplateView):
             context["chart_values"] = df["得点率"].tolist() # 縦棒の値
             return context
         except:
-            print('読み込まれました')
+            #print('読み込まれました')
             pass
 
 
@@ -76,6 +76,8 @@ class PostDeleteView(DeleteView):
     template_name = "post_confirm_delete.html"
     success_url = reverse_lazy("website:gallery")
 
+
+# ^^^^^^^^^^^^^^^^^^^^^モーター情報に関わる処理^^^^^^^^^^^^^^^^^
 
 class MotorCommentListCreateAPI(View):
     """
@@ -140,6 +142,7 @@ class MotorCommentDetailAPI(View):
     # 誤ってGETなどが来た時の保険
     def get(self, *args, **kwargs):
         return HttpResponseNotAllowed(["DELETE"])
+    
     def post(self, request, machine_no, pk):
         # /.../delete だけ許可（互換ルート）
         if str(request.path).endswith("/delete"):
@@ -147,3 +150,19 @@ class MotorCommentDetailAPI(View):
             obj.delete()
             return HttpResponse(status=204)
         return HttpResponseNotAllowed(["DELETE"])
+    
+
+class MotorCommentDetailView(TemplateView):
+    template_name = "motor_comments_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        machine_no = self.kwargs.get("machine_no")
+
+        # 範囲外なら404を返したい場合
+        if not (1 <= machine_no <= 100):
+            raise HttpResponseNotFound("指定された号機は存在しません")
+
+        # JSで使うために埋め込みたいならcontextに渡す
+        context["machine_no"] = machine_no
+        return context

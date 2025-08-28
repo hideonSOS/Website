@@ -6,7 +6,10 @@ from .views import (
     Motor_Comments,
     MotorCommentListCreateAPI,
     MotorCommentDetailAPI,
+    MotorCommentDetailView,
 )
+from django.http import HttpResponseNotFound
+
 
 app_name = 'website'
 
@@ -27,4 +30,9 @@ urlpatterns = [
 
     # ←← これ（/<pk>/delete）は “POST フォールバック”
     path("api/machines/<int:machine_no>/posts/<int:pk>/delete", MotorCommentDetailAPI.as_view(),name="motor_post_delete_api"),
+
+    # 一覧表示するページで、自動的にjavascriptのfetchが走ります。
+    path("machines/<int:machine_no>/", MotorCommentDetailView.as_view(), name="motor_comments_detail"),
+    
+    path("machines/", lambda request: HttpResponseNotFound()),
 ]

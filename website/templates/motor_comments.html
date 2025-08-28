@@ -83,6 +83,19 @@
     font-size: 24px; /* スマホ用に大きく */
   }
 }
+.btn-link {
+  display:inline-block;
+  background:#0f172a;
+  color:yellow;
+  border:1px solid #334155;
+  padding:8px 12px;
+  border-radius:10px;
+  text-decoration:none;
+}
+.btn-link:hover {
+  background:#111827;
+}
+
   </style>
 </head>
 <body>
@@ -91,7 +104,9 @@
   <!-- 投稿一覧モーダル -->
   <dialog id="postsDialog" aria-modal="true">
     <div class="modalHead">
-      <div class="modalTitle"><span id="dialogMachine"></span> の投稿一覧</div>
+      <div class="modalTitle"><span id="dialogMachine"></span> への投稿を行う</div>
+      <a id="openPageLink" class="btn-link" target="_blank" rel="noopener">一覧表示</a>
+
     </div>
     <div class="modalBody">
       <form id="postForm" class="postForm" novalidate>
@@ -119,7 +134,7 @@
       <div id="postsList" class="postsList" aria-live="polite"></div>
     </div>
     <div class="modalFoot">
-      <a id="openPageLink" href="#" target="_blank" rel="noopener">開発中</a>
+      
       <button id="closeDialog" type="button">閉じる</button>
     </div>
   </dialog>
@@ -128,7 +143,7 @@
     // ====== 基本設定 ======
     const COUNT = 100; // 正方形の数（1～100）
     const API_BASE = "/website/api/machines"; // エンドポイントの共通プレフィックス
-
+    
     // === CSRF ===
     function getCSRFToken(){
       const m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
@@ -312,8 +327,9 @@
 
       currentMachine = machineNo;
       if(titleEl) titleEl.textContent = `${machineNo}号機`;
-      if(linkEl) linkEl.href = `/machines/${machineNo}/posts`;
-
+      
+      //if(linkEl) linkEl.href = `/machines/${machineNo}/posts`;
+      if(linkEl) linkEl.href = `/website/machines/${machineNo}/`;
       if(dlg && typeof dlg.showModal === "function") dlg.showModal();
 
       // 初期状態で今日の日付をセット（未入力の場合）
@@ -341,7 +357,7 @@
       });
       assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
     })();
-
+    
 
     
   </script>
