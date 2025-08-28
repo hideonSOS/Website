@@ -19,6 +19,7 @@
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
       display:block;
     }
+    
     .grid{
       display:grid;
       width:min(1200px, 96vw);
@@ -76,6 +77,11 @@
       
       /* iOS向けの追加ガード（WebKit判定） */
 
+}
+@media (max-width: 600px) {
+  .sq {
+    font-size: 24px; /* スマホ用に大きく */
+  }
 }
   </style>
 </head>

@@ -44,11 +44,11 @@
     <button id="sort-asc"  class="mini-btn">昇順</button>
     <button id="sort-desc" class="mini-btn">降順</button>
     <input id="threshold-input" class="mini-input" type="number" step="0.01" placeholder="基準値" aria-label="基準線の値" />
-    <button id="toggle-avg" class="mini-btn">平均線</button>
-    <button class="mini-btn" disabled>ズーム</button>
-    <button class="mini-btn" disabled>ラベル</button>
-    <button class="mini-btn" disabled>DL</button>
-    <button class="mini-btn" disabled>リセット</button>
+    
+    <button class="mini-btn" onclick="window.location.href='{% url 'website:calc_tokuten' %}'">再読み込み</button>
+    <button class="mini-btn" onclick="window.location.href='{% url 'website:index' %}'">トップページ</button>
+    <button class="mini-btn" disabled>開発中</button>
+    <button class="mini-btn" disabled>開発中</button>
   </div>
 
   <!-- ★ Django からの配列を安全に埋め込み（ここは your view が渡す変数名に合わせてください） -->
@@ -117,21 +117,7 @@
       myChart.update();
     }
 
-    function toggleAverageLine() {
-      const idx = findDataset(ds => ds._isAvgLine === true);
-      if (idx !== -1) {
-        myChart.data.datasets.splice(idx, 1);
-      } else {
-        const avg = computeAverage(myChart.data.datasets[0].data);
-        myChart.data.datasets.push({
-          type: 'line', label: '平均線',
-          data: Array(myChart.data.labels.length).fill(avg),
-          borderColor: '#ffcc00', borderWidth: 2, pointRadius: 0, borderDash:[6,4], tension: 0,
-          _isAvgLine: true
-        });
-      }
-      myChart.update();
-    }
+    
 
     function setOrUpdateThresholdLine(value) {
       const num = Number(value);
@@ -160,7 +146,7 @@
 
     document.getElementById('sort-asc').addEventListener('click', () => sortChart(true));
     document.getElementById('sort-desc').addEventListener('click', () => sortChart(false));
-    document.getElementById('toggle-avg').addEventListener('click', toggleAverageLine);
+    
     const thrInput = document.getElementById('threshold-input');
     thrInput.addEventListener('input', (e) => setOrUpdateThresholdLine(e.target.value));
     thrInput.addEventListener('change', (e) => setOrUpdateThresholdLine(e.target.value));

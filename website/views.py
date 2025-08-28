@@ -30,11 +30,15 @@ class CalcTokutenView(TemplateView):
     template_name = "calc_tokuten.html"
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        df = scrape()  # DataFrame
-        # 例: "得点率" 列をリスト化
-        context["chart_labels"] = df["選手名"].tolist()   # 横軸ラベル
-        context["chart_values"] = df["得点率"].tolist() # 縦棒の値
-        return context
+        try:
+            df = scrape()  # DataFrame
+            # 例: "得点率" 列をリスト化
+            context["chart_labels"] = df["選手名"].tolist()   # 横軸ラベル
+            context["chart_values"] = df["得点率"].tolist() # 縦棒の値
+            return context
+        except:
+            print('読み込まれました')
+            pass
 
 
 class GalleryView(View):

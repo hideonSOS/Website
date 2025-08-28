@@ -117,6 +117,37 @@
   /* メモ表示 */
     .memo{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .noteIcon{ font-size:12px; opacity:.9; }
+  .num {
+  color: #00e5ff;  /* 例：ゴールド */
+  font-weight: bold; /* 太字にする場合 */
+  font-size:12px;
+}
+.header {
+  position: sticky;
+  top: 0;
+  background: #000;  /* 背景を指定しないと下の要素が透ける */
+  z-index: 100;      /* 前面に出す */
+}
+.btn-link {
+    display: inline-block;
+    padding: 5px 16px;
+    background: #0f172a;   /* ボタン背景色 */
+    color: #e5e7eb;       /* 文字色 */
+    border: 1px solid #334155;
+    border-radius: 10px;
+    text-decoration: none; /* aタグの下線を消す */
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn-link:hover {
+    background: #111827; /* hover時の色 */
+  }
+  .monthLabel {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
 </style>
 </head>
 <body>
@@ -130,6 +161,7 @@
       <div class="right">
         <span class="badge" id="modeBadge" title="サーバーと疎通できない場合は自動でローカル保存に切替">モード判定中…</span>
         <button id="todayBtn" aria-label="今月へ">今日へ</button>
+        <a class="btn-link" href= "{% url 'website:index' %}">トップページ</a>
       </div>
     </div>
 
@@ -260,11 +292,11 @@
     function updateModeBadge(){
       const badge = document.getElementById('modeBadge');
       if(serverAvailable){
-        badge.textContent = 'サーバー同期（/api/events）';
+        badge.textContent = '';
         badge.style.color = '#a7f3d0';
         badge.style.borderColor = '#134e5a';
       }else{
-        badge.textContent = 'オフライン保存（localStorage）';
+        badge.textContent = 'スマホの方は画面を横にしてご覧ください。';
         badge.style.color = '#fde68a';
         badge.style.borderColor = '#4b5563';
       }
