@@ -26,6 +26,7 @@ urlpatterns = [
     path("calendar/", Calendar.as_view(), name="calendar"),
     path("post/new/", PostCreateView.as_view(), name="post_new"),
     path("post/<int:pk>/delete/", PostDeleteView.as_view(), name="post_delete"),
+    path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
 
 
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(),name="motor_posts_api"),
@@ -38,7 +39,8 @@ urlpatterns = [
 
     # 一覧表示するページで、自動的にjavascriptのfetchが走ります。
     path("machines/<int:machine_no>/", MotorCommentDetailView.as_view(), name="motor_comments_detail"),
-    
+    path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
+
     path("machines/", lambda request: HttpResponseNotFound()),
     path('api/', include(router.urls)),
 ]
