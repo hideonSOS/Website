@@ -16,3 +16,33 @@ class MotorComment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+class RaceDay(models.Model):
+    TYPE_CHOICES = [
+        ('none', '非開催'),
+        ('toshi', '都市開催'),
+        ('minou', '箕面開催'),
+    ]
+    date = models.DateField()
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='none')
+    title = models.CharField(max_length=200, blank=True)  # 任意入力の大会タイトル
+
+    def __str__(self):
+        return f"{self.date} {self.get_type_display()} {self.title}"
+
+
+class Event(models.Model):
+    ROLE_CHOICES = [
+        ('MC', 'MC'),
+        ('解説者1', '解説者1'),
+        ('解説者2', '解説者2'),
+        ('ゲスト', 'ゲスト'),
+        ('メモ', 'メモ'),
+    ]
+    date = models.DateField()
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='MC')
+    title = models.CharField(max_length=100, blank=True)  # 出演者名や役割名
+    description = models.TextField(blank=True)            # メモ内容など
+
+    def __str__(self):
+        return f"{self.date} [{self.role}] {self.title}"

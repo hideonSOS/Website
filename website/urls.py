@@ -1,5 +1,6 @@
 # website/urls.py
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     IndexView, CalcTokutenView, GalleryView,Calendar,
     PostDeleteView, PostCreateView,
@@ -7,9 +8,14 @@ from .views import (
     MotorCommentListCreateAPI,
     MotorCommentDetailAPI,
     MotorCommentDetailView,
+    RaceDayViewSet,
+    EventViewSet
 )
 from django.http import HttpResponseNotFound
 
+router = DefaultRouter()
+router.register(r'racedays', RaceDayViewSet)
+router.register(r'events', EventViewSet)
 
 app_name = 'website'
 
@@ -21,7 +27,6 @@ urlpatterns = [
     path("post/new/", PostCreateView.as_view(), name="post_new"),
     path("post/<int:pk>/delete/", PostDeleteView.as_view(), name="post_delete"),
 
-    path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
 
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(),name="motor_posts_api"),
 
@@ -35,4 +40,5 @@ urlpatterns = [
     path("machines/<int:machine_no>/", MotorCommentDetailView.as_view(), name="motor_comments_detail"),
     
     path("machines/", lambda request: HttpResponseNotFound()),
+    path('api/', include(router.urls)),
 ]

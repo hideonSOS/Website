@@ -14,6 +14,11 @@ from datetime import date
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework import viewsets
+from .models import RaceDay, Event
+from .serializers import RaceDaySerializer, EventSerializer
+
+
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Motor_Comments(TemplateView):
@@ -166,3 +171,15 @@ class MotorCommentDetailView(TemplateView):
         # JSで使うために埋め込みたいならcontextに渡す
         context["machine_no"] = machine_no
         return context
+    
+
+class RaceDayViewSet(viewsets.ModelViewSet):
+    queryset = RaceDay.objects.all()
+    serializer_class = RaceDaySerializer
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    def create(self, request, *args, **kwargs):
+        print("受信データ:", request.data)  # ← ここでログ出力
+        return super().create(request, *args, **kwargs)
