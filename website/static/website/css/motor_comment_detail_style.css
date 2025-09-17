@@ -1,0 +1,46 @@
+body {
+    background: #000;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 20px;
+    }
+    h1 {
+    color: #0ff;
+    margin-bottom: 30px;
+    }
+    .controls {
+    margin-bottom: 20px;
+    }
+    select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #eafb02;
+    font-size:30px;
+    }
+    .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    }
+    .post-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+    }
+    .meta {
+    font-size: 16px;
+    color: #93c5fd;
+    margin-bottom: 8px;
+    white-space: normal;   /* ← 改行を許可 */
+    word-break: break-word; /* ← 長い単語も折り返す */
+    overflow-wrap: break-word; /* こちらも保険 */
+    }
+    .content {
+    font-size: 30px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    }

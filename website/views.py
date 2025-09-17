@@ -22,17 +22,17 @@ from .serializers import RaceDaySerializer, EventSerializer
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Motor_Comments(TemplateView):
-    template_name = "motor_comments.html"
+    template_name = "website/motor_comments.html"
 
 class IndexView(TemplateView):
-    template_name = "index.html"
+    template_name = "website/index.html"
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Calendar(TemplateView):
-    template_name = "calendar.html"
+    template_name = "website/calendar.html"
 
 class CalcTokutenView(TemplateView):
-    template_name = "calc_tokuten.html"
+    template_name = "website/calc_tokuten.html"
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
@@ -50,7 +50,7 @@ class GalleryView(View):
     def get(self, request):
         posts = Post.objects.all().order_by("-created_at")
         form = PostForm()
-        return render(request, "gallery.html", {"posts": posts, "form": form})
+        return render(request, "website/gallery.html", {"posts": posts, "form": form})
 
     def post(self, request):
         # 投稿処理
@@ -72,13 +72,13 @@ class GalleryView(View):
 class PostCreateView(CreateView):
     model = Post
     fields = ["title", "image"]
-    template_name = "post_form.html"
+    template_name = "website/post_form.html"
     success_url = reverse_lazy("website:gallery")  # 投稿後はギャラリーへ戻る
 
 # 投稿削除
 class PostDeleteView(DeleteView):
     model = Post
-    template_name = "post_confirm_delete.html"
+    template_name = "website/post_confirm_delete.html"
     success_url = reverse_lazy("website:gallery")
 
 
@@ -158,7 +158,7 @@ class MotorCommentDetailAPI(View):
     
 
 class MotorCommentDetailView(TemplateView):
-    template_name = "motor_comments_detail.html"
+    template_name = "website/motor_comments_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Gallery</title>
+<link rel="stylesheet" href="{% static 'website/css/gallery_style.css' %}">
+</head>
+<body>
+
+  <!-- 投稿フォーム -->
+  <div class="post-form">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" style="background:green;color:white;">投稿する</button>
+    </form>
+  </div>
+
+  <!-- ギャラリー表示 -->
+  <div class="gallery">
+    {% for post in posts %}
+      <div class="item">
+        <img src="{{ post.image.url }}" alt="{{ post.title }}" onclick="openModal('{{ post.image.url }}')">
+        <form method="post" action="{% url 'website:post_delete' post.id %}">
+          {% csrf_token %}
+          <button type="submit" class="delete-btn">削除</button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- モーダル -->
+  <div id="modal" class="modal" onclick="closeModal()">
+    <img id="modal-img" src="" alt="">
+  </div>
+
+  <script src="{% load 'website/js/gallery_script.js' %}"></script>
+
+</body>
+</html>

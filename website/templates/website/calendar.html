@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>アクアライブステーション・出演者</title>
+  
+<link rel="stylesheet" href="{% static 'website/css/calendar_style.css' %}"
+</head>
+<body>
+  <div class="container">
+    <div class="header" aria-label="カレンダーナビゲーション">
+      <div class="left">
+        <button class="iconbtn" id="prevBtn" aria-label="前の月へ">◀</button>
+        <div class="monthLabel" id="monthLabel">----</div>
+        <button class="iconbtn" id="nextBtn" aria-label="次の月へ">▶</button>
+      </div>
+      <div class="right">
+        <span class="badge" id="modeBadge" title="サーバーと疎通できない場合は自動でローカル保存に切替">モード判定中…</span>
+        <button id="todayBtn" aria-label="今月へ">今日へ</button>
+        <a class="btn-link" href= "{% url 'website:index' %}">トップページ</a>
+      </div>
+    </div>
+
+    <div class="weekday" aria-hidden="true">
+      <div>月</div>
+      <div>火</div>
+      <div>水</div>
+      <div>木</div>
+      <div>金</div>
+      <div class="sat">土</div>
+      <div class="sun">日</div>
+    </div>
+
+    <div class="grid" id="grid" role="grid" aria-label="月間カレンダー"></div>
+
+    <p class="help">ヒント：日付セルをクリックすると追加できます。モーダルは ESC または背景クリックで閉じます（×ボタンは非表示）。</p>
+  </div>
+
+  <!-- 追加/編集モーダル（ダイアログ） -->
+  <dialog id="eventDialog">
+  <form id="eventForm">
+    <div class="modalHead">
+      <div class="modalTitle" id="dialogTitle">予定を追加</div>
+    </div>
+
+    <div class="modalBody">
+      <div class="row">
+        <label for="dateInput">日付</label>
+        <input type="date" id="dateInput" required />
+      </div>
+      
+      <div class="row">
+        <label for="raceTypeSelect">開催種別</label>
+        <select id="raceTypeSelect">
+          <option value="none">非開催</option>
+          <option value="toshi">都市開催</option>
+          <option value="minou">箕面開催</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="raceTitleInput">グレード（開催の特色）</label>
+        <input type="text" id="raceTitleInput" placeholder="例：SG 一般戦 ５日節 女子戦 等" />
+        <div class="modalFoot">
+          <button type="button" class="saveBtn" data-field="raceTitle">追加</button>
+          <button type="button" class="closeBtn">閉じる</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="roleSelect">役割</label>
+        <select id="roleSelect">
+          <option value="MC">MC</option>
+          <option value="解説者1">解説者1</option>
+          <option value="解説者2">解説者2</option>
+          <option value="ゲスト">ゲスト</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="titleInput">出演者</label>
+        <input type="text" id="titleInput" placeholder="例：出演者名（MC・解説者・ゲスト）" />
+        <div class="modalFoot">
+          <button type="button" class="saveBtn" data-field="title">追加</button>
+          <button type="button" class="closeBtn">閉じる</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="descInput">メモ（任意）</label>
+        <textarea id="descInput" placeholder="詳細メモ"></textarea>
+        <div class="modalFoot">
+          <button type="button" class="saveBtn" data-field="desc">追加</button>
+          <button type="button" class="closeBtn">閉じる</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <strong style="font-size:12px; color:var(--muted);">出演者及びメモ</strong>
+        <div id="eventList" class="eventList"></div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+
+  <script src = '{% static "website/js/calendar_script.js" %}'></script>
+</body>
+</html>

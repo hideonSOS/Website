@@ -1,0 +1,153 @@
+:root{
+      --bg: #000;          /* 背景（黒） */
+      --fg: #e5e7eb;       /* 文字色（明灰） */
+      --muted:lightgrey;    /* 補助文字 */
+      --accent: #22d3ee;   /* アクセント（シアン） */
+      --grid: #929292;     /* グリッド線 */
+      --cell: #0b0b0b;     /* セル背景 */
+      --cell-hover: #111827; /* セルhover */
+      --other-month: #0a0a0a; /* 前後月セル */
+      --sun: orange;      /* 日曜 */
+      --sat: cyan;      /* 土曜 */
+    }
+    html, body { height: 100%; }
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+      line-height:1.5; -webkit-font-smoothing:antialiased;
+    }
+    .container{ max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+
+    /* ヘッダー */
+    .header{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:12px; }
+    .left, .right{ display:flex; align-items:center; gap:8px; }
+    .brand{ font-size:18px; color:var(--muted); letter-spacing:.04em; }
+    .monthLabel{ font-size:28px; font-weight:700; letter-spacing:.02em; }
+    .badge{ font-size:12px; padding:2px 8px; border:1px solid var(--grid); border-radius:999px; color:var(--muted); }
+
+    button{ cursor:pointer; border:none; border-radius:12px; background:#0f172a; color:var(--fg); padding:10px 14px; font-weight:600; }
+    button:hover{ background:#111827; }
+    .iconbtn{ width:42px; height:42px; display:grid; place-items:center; border-radius:12px; }
+
+    /* 曜日ヘッダ */
+    .weekday{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top:10px; 
+    position: sticky;   /* ← 固定する */
+    top: 56px;          /* ← ヘッダーの高さ分ずらす */
+    background:#000;    /* ← 背景色をつけないと透ける */
+    z-index: 90;        /* ← ヘッダーより少し下に */}
+    .weekday div{ text-align:center; padding:10px 0; font-size:13px; color:white; border-bottom:1px solid var(--grid); }
+    .weekday .sun{ color:var(--sun); }
+    .weekday .sat{ color:var(--sat); }
+
+    /* カレンダー本体 */
+    .grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top:8px; }
+    .day{
+      position:relative; min-height:220px; background:var(--cell); border:1px solid var(--grid); border-radius:12px; padding:8px; overflow:hidden;
+      transition: background .15s ease;
+      
+    }
+    .day:hover{ background:var(--cell-hover); }
+    .day.other{ 
+      background:var(--other-month); opacity:.7; }
+    .num{
+      position:absolute; top:8px; right:10px; font-size:12px; color:var(--muted); font-weight:normal;
+    }
+    .today{ outline:2px solid var(--accent); outline-offset:-2px; }
+
+    .events{ margin-top:22px; display:flex; flex-direction:column; gap:6px; }
+    .pill{ display:inline-flex; align-items:center; gap:8px; font-size:12px; background:#0d3b45; border:1px solid #134e5a; padding:6px 8px; border-radius:999px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+    .pill .time{ color:#a7f3d0; font-weight:700; }
+
+    /* フッタの説明 */
+    .help{ margin-top:14px; color:var(--muted); font-size:12px; }
+
+    /* モーダル（<dialog>） */
+    dialog{ border:none; border-radius:16px; padding:0; width:min(560px, 92vw); background:#0b1220; color:var(--fg); box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    dialog::backdrop{ background:rgba(0,0,0,.6); }
+    .modalHead{ display:flex; align-items:center; gap:10px; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--grid); }
+    .modalTitle{ font-weight:700; }
+    .modalBody{ padding:18px; display:grid; gap:14px; }
+    .row{ display:grid; gap:6px; }
+    label{ font-size:12px; color:var(--muted); }
+    input[type="text"], input[type="time"], input[type="date"], textarea{ background:#0f172a; color:var(--fg); border:1px solid var(--grid); border-radius:10px; padding:10px 12px; outline:none; color-scheme: dark; }
+    textarea{ min-height:80px; resize:vertical; }
+    .modalFoot{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-top:1px solid var(--grid); }
+    .danger{ background:#3f1d1d; }
+    .danger:hover{ background:#4a2323; }
+
+    .listEmpty{ color:var(--muted); font-size:12px; }
+    .eventList{ display:flex; flex-direction:column; gap:8px; }
+    .eventItem{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--grid); background:#0f172a; padding:8px 10px; border-radius:10px; }
+    .eventItem .meta{ display:flex; gap:8px; font-size:12px; color:var(--muted); }
+    /* 3レーン（MC/解説者1/解説者2）用 */
+    .lanes{ display:grid; grid-template-rows: repeat(4, 1fr); gap:6px; margin-top:24px; }
+    .lane{ display:flex; flex-direction:column; gap:6px; border:1px dashed var(--grid); border-radius:10px; padding:6px; }
+    .laneTitle{ font-size:11px; color:var(--muted); letter-spacing:.02em; }
+    .laneBody{ display:flex; flex-direction:column; gap:6px; }
+  /* 開催日色分け */
+    /* 開催日色分け */
+  .day.none { background:#0a0a0a; border:2px dashed #555; } /* 非開催=グレー */
+
+  .day.toshi { background:#0b1e2e; border:2px solid #1975ee; } /* 都市開催=青 */
+  .day.minou { background:#0b1e2e; border:2px solid #27ee19; } /* 箕面開催=緑 */
+
+    
+    .raceTag{ position:absolute; top:8px; left:10px; font-size:11px; padding:2px 6px; border-radius:8px; background:#102846; border:1px solid #1e3a5f; color:#93c5fd; }
+  /* 入力ピッカーのアイコンを明るい青に */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator{
+      filter: invert(78%) sepia(24%) saturate(1000%) hue-rotate(145deg) brightness(110%) contrast(100%);
+      cursor:pointer;
+    }
+    input[type="checkbox"]{ accent-color: var(--accent); }
+  /* メモ表示 */
+    .memo{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .noteIcon{ font-size:12px; opacity:.9; }
+  .num {
+  color: #00e5ff;  /* 例：ゴールド */
+  font-weight: bold; /* 太字にする場合 */
+  font-size:12px;
+}
+.header {
+  position: sticky;
+  top: 0;
+  background: #000;  /* 背景を指定しないと下の要素が透ける */
+  z-index: 100;      /* 前面に出す */
+}
+.btn-link {
+    display: inline-block;
+    padding: 5px 16px;
+    background: #0f172a;   /* ボタン背景色 */
+    color: #e5e7eb;       /* 文字色 */
+    border: 1px solid #334155;
+    border-radius: 10px;
+    text-decoration: none; /* aタグの下線を消す */
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn-link:hover {
+    background: #111827; /* hover時の色 */
+  }
+  .monthLabel {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+/* 都市開催（青） */
+.day.toshi .raceTag {
+  color: #1975ee;        /* フォントを枠色と同じに */
+  border-color: #1975ee; /* 枠も合わせるなら */
+}
+
+/* 箕面開催（緑） */
+.day.minou .raceTag {
+  color: #27ee19;
+  border-color: #27ee19;
+}
+
+/* 非開催（グレー） */
+.day.none .raceTag {
+  color: #555;
+  border-color: #555;
+}
