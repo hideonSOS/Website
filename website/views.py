@@ -183,3 +183,7 @@ class EventViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         print("受信データ:", request.data)  # ← ここでログ出力
         return super().create(request, *args, **kwargs)
+    
+
+class Motor_Comment_Index(TemplateView):
+    template_name = 'website/motor_comment_index.html'

@@ -9,7 +9,8 @@ from .views import (
     MotorCommentDetailAPI,
     MotorCommentDetailView,
     RaceDayViewSet,
-    EventViewSet
+    EventViewSet,
+    Motor_Comments_Index,
 )
 from django.http import HttpResponseNotFound
 
@@ -27,20 +28,15 @@ urlpatterns = [
     path("post/new/", PostCreateView.as_view(), name="post_new"),
     path("post/<int:pk>/delete/", PostDeleteView.as_view(), name="post_delete"),
     path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
-
-
+    path("motor_comments_index/", Motor_Comments_Index.as_view(), name="motor_comments_index"),
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(),name="motor_posts_api"),
-
     # ←← これ（/<pk>）が “DELETE” で使われます
     path("api/machines/<int:machine_no>/posts/<int:pk>", MotorCommentDetailAPI.as_view(),name="motor_post_detail_api"),
-
     # ←← これ（/<pk>/delete）は “POST フォールバック”
     path("api/machines/<int:machine_no>/posts/<int:pk>/delete", MotorCommentDetailAPI.as_view(),name="motor_post_delete_api"),
-
     # 一覧表示するページで、自動的にjavascriptのfetchが走ります。
     path("machines/<int:machine_no>/", MotorCommentDetailView.as_view(), name="motor_comments_detail"),
     path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
-
     path("machines/", lambda request: HttpResponseNotFound()),
     path('api/', include(router.urls)),
 ]

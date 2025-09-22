@@ -1,0 +1,220 @@
+// ====== 基本設定 ======
+    const COUNT = 100; // 正方形の数（1～100）
+    const API_BASE = "/website/api/machines"; // エンドポイントの共通プレフィックス
+    
+    // === CSRF ===
+    function getCSRFToken(){
+      const m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : "";
+    }
+    function assertCSRF(){
+      if(!getCSRFToken()){
+        console.warn("CSRFトークンが見つかりません。ページ配信ビューに ensure_csrf_cookie を付けてください。");
+      }
+    }
+
+    // ====== グリッド生成 ======
+    const grid = document.getElementById("grid");
+    for (let i = 1; i <= COUNT; i++) {
+      const d = document.createElement("div");
+      d.className = "sq";
+      d.title = `#${i}`;
+      d.setAttribute("aria-label", `${i}号機`);
+      d.textContent = `${i}号機`;
+      d.tabIndex = 0;
+      d.setAttribute("role","button");
+      d.addEventListener("click", () => openPosts(i));
+      d.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPosts(i); }
+      });
+      grid.appendChild(d);
+    }
+
+    // ====== 投稿一覧（表示/取得/作成） ======
+    let currentMachine = null;
+
+    async function fetchPosts(machineNo){
+      try{
+        const res = await fetch(`${API_BASE}/${machineNo}/posts`, { cache:"no-store", credentials:"same-origin" });
+        if(res.ok){ return await res.json(); }
+        console.error("GET failed:", res.status, await res.text());
+      }catch(e){ console.error("GET error:", e); }
+      return []; // 失敗時は空配列
+    }
+    async function deletePost(machineNo, postId){
+      let res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          "X-CSRFToken": getCSRFToken(),
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "same-origin",
+      });
+
+      if(res.status !== 204){
+        res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}/delete`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+      }
+
+      if(res.status !== 204){
+        const text = await res.text().catch(()=> "");
+        alert(`削除に失敗しました（${res.status}）\n${text.slice(0,400)}`);
+        throw new Error(`Delete failed ${res.status}`);
+      }
+    }
+
+    async function createPost(machineNo, payload){
+      const headers = {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken(),
+        "X-Requested-With": "XMLHttpRequest"
+      };
+      
+      try{
+        const res = await fetch(`${API_BASE}/${machineNo}/posts`, {
+          method:"POST",
+          headers,
+          body: JSON.stringify(payload),
+          credentials: "same-origin",
+        });
+        if(res.status === 201){ return await res.json(); }
+
+        // エラーメッセージを拾って通知（400/403など）
+        const msg = await res.text();
+        alert(`投稿に失敗しました（${res.status}）\n${msg || "サーバーからの応答なし"}`);
+        throw new Error(`POST failed ${res.status}`);
+      }catch(e){
+        console.error("POST error:", e);
+        throw e;
+      }
+    }
+
+    async function loadPostsIntoList(machineNo){
+      const statusEl = document.getElementById("postsStatus");
+      const listEl = document.getElementById("postsList");
+      listEl.innerHTML = "";
+      statusEl.textContent = "読み込み中...";
+      try{
+        const posts = await fetchPosts(machineNo);
+        if(!posts || posts.length === 0){ statusEl.textContent = "投稿はありません"; return; }
+        statusEl.textContent = "";
+        const sorted = posts.slice().sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0));
+        for(const p of sorted){
+          const card = document.createElement("div"); card.className = "postCard";
+          const meta = document.createElement("div"); meta.className = "meta";
+          const author = p.author || "匿名";
+          const racer  = p.racer || "";  // ★追加
+          const when = fmtDateTime(p.created_at);
+          const sched = p.scheduled_at || "";
+          meta.textContent =(author ? `投稿者 ${author}`:"") +(racer ? ` ／ 使用選手 ${racer}` : "") +(sched ? ` ／ 投稿日 ${sched}` : "");
+          const content = document.createElement("div"); content.className = "content";
+          content.textContent = p.content || "";
+          // ★削除ボタン
+          const delBtn = document.createElement("button");
+          delBtn.textContent = "削除";
+          delBtn.style.marginTop = "8px";
+          delBtn.addEventListener("click", async ()=>{
+            if(!confirm("この投稿を削除します。よろしいですか？")) return;
+            try{
+              await deletePost(currentMachine, p.id);
+              await loadPostsIntoList(currentMachine); // 再描画
+            }catch(e){
+              alert("削除に失敗しました");
+            } });
+          card.appendChild(meta); card.appendChild(content);
+          card.appendChild(delBtn); // ★追加
+          listEl.appendChild(card);
+        }
+      }catch(e){
+        statusEl.textContent = "読み込みに失敗しました";
+      }
+    }
+
+    // ====== モーダル制御 ======
+    function bindPostForm(){
+      const form = document.getElementById("postForm");
+      const authorInput = document.getElementById("authorInput");
+      const racerInput = document.getElementById("titleInput");
+      const contentInput = document.getElementById("contentInput");
+      const dateInput = document.getElementById("dateInput");
+      if(!form) return;
+
+      form.onsubmit = async (e)=>{
+        e.preventDefault();
+        assertCSRF();
+        const payload = {
+          author: (authorInput?.value || "").trim() || "匿名",
+          racer: (racerInput?.value || "").trim(), 
+          content: (contentInput?.value || "").trim(),
+          scheduled_at: (dateInput?.value) ? dateInput.value : null
+        };
+        if(!payload.content){
+          alert("本文を入力してください");
+          contentInput?.focus();
+          return;
+        }
+        try{
+          await createPost(currentMachine, payload);
+          if(contentInput) contentInput.value = "";
+          if(racerInput) racerInput.value = "";
+          await loadPostsIntoList(currentMachine);
+        }catch(e){
+          // createPost でアラート済み
+        }
+      };
+    }
+
+    function fmtDateTime(dtStr){
+      if(!dtStr) return "";
+      const d = new Date(dtStr);
+      if(isNaN(d)) return dtStr;
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+      const hh=String(d.getHours()).padStart(2,"0"), mm=String(d.getMinutes()).padStart(2,"0");
+      return `${y}-${m}-${day} ${hh}:${mm}`;
+    }
+
+    async function openPosts(machineNo){
+      const dlg = document.getElementById("postsDialog");
+      const titleEl = document.getElementById("dialogMachine");
+      const linkEl = document.getElementById("openPageLink");
+
+      currentMachine = machineNo;
+      if(titleEl) titleEl.textContent = `${machineNo}号機`;
+      
+      //if(linkEl) linkEl.href = `/machines/${machineNo}/posts`;
+      if(linkEl) linkEl.href = `/website/machines/${machineNo}/`;
+      if(dlg && typeof dlg.showModal === "function") dlg.showModal();
+
+      // 初期状態で今日の日付をセット（未入力の場合）
+      const dEl = document.getElementById("dateInput");
+      if(dEl && !dEl.value){
+        const t = new Date();
+        const y = t.getFullYear();
+        const m = String(t.getMonth()+1).padStart(2,"0");
+        const d = String(t.getDate()).padStart(2,"0");
+        dEl.value = `${y}-${m}-${d}`;
+      }
+      bindPostForm();
+      await loadPostsIntoList(machineNo);
+    }
+
+    // 画面ロード時のセットアップ
+    (function(){
+      const dlg = document.getElementById("postsDialog");
+      const closeBtn = document.getElementById("closeDialog");
+      if(closeBtn) closeBtn.addEventListener("click", ()=> dlg.close());
+      if(dlg) dlg.addEventListener("click", (e)=>{
+        const r = dlg.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if(!inside) dlg.close();
+      });
+      assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
+    })();
+    
+
+    
