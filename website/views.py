@@ -186,4 +186,4 @@ class EventViewSet(viewsets.ModelViewSet):
     
 
 class Motor_Comments_Index(TemplateView):
-    template_name = 'website/motor_comment_index.html'
+    template_name = 'website/motor_comments_index.html'
