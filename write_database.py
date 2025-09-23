@@ -2,6 +2,7 @@
 import os
 import django
 import pandas as pd
+from pathlib import Path
 
 # Djangoの設定を読み込む
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
@@ -10,8 +11,9 @@ django.setup()
 # モデルをインポート
 from website.models import Title
 
+path = os.path.join(Path(__file__).resolve().parent,'/website/static/website/title.csv')
 # CSV読み込み
-df = pd.read_csv(r"C:\\Users\\matsuyama\\OneDrive\\デスクトップ\\study\\myproject\\MyWebsite\myproject\\website\\static\\website\\title.csv", encoding="utf-8-sig")
+df = pd.read_csv(path)
 
 df = df.rename(columns={
     "ＩＤ": "id",
