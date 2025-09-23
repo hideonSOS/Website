@@ -11,8 +11,8 @@ django.setup()
 # モデルをインポート
 from website.models import Title
 
-path = os.path.join(Path(__file__).resolve().parent,'/website/static/website/title.csv')
-# CSV読み込み
+BasePath = Path(__file__).resolve().parent
+path = os.path.join(BasePath,'website/static/website/title.csv')
 df = pd.read_csv(path)
 
 df = df.rename(columns={
