@@ -31,6 +31,15 @@
           <label for="dateInput">入力日</label>
           <input type="date" id="dateInput" />
         </div>
+        <label for="titleSelect">開催</label>
+        <select id="titleSelect" required>
+          <option value="">開催を選択してください</option>
+          {% for ev in titles %}
+            <option value="{{ ev }}">
+              {{ ev }}
+            </option>
+          {% endfor %}
+        </select>
         <div class="row">
           <label for="contentInput">コメント</label>
           <textarea id="contentInput" placeholder="モーターに関する情報を入力" required></textarea>
@@ -48,5 +57,7 @@
     </div>
   </dialog>
 <script src="{% static 'website/js/motor_comments.js' %}"></script>
+{{ titles|json_script:"titles-data" }}
+
 </body>
 </html>

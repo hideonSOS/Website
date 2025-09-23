@@ -1,0 +1,44 @@
+/* motor_comments_total.css */
+
+/* ページ全体 */
+body {
+    background-color: #000;   /* 背景を黒 */
+    color: #fff;              /* 文字を白 */
+    font-family: "Segoe UI", sans-serif;
+    margin: 20px;
+}
+
+/* セレクトボックス */
+select {
+    background-color: #111;   /* 濃い黒に近い色 */
+    color: #fff;
+    border: 1px solid #555;
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+/* 投稿全体のブロック */
+.post {
+    background-color: #111;   /* 各投稿も黒ベース */
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+    list-style: none;
+}
+
+/* 区切り線 */
+hr, p {
+    color: #aaa;
+}
+
+/* リンクがある場合 */
+a {
+    color: #4fc3f7; /* 青系で見やすく */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

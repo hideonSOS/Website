@@ -17,19 +17,25 @@
   <!-- ナビゲーション -->
   <nav>
     <ul>
-      <li><a href="{% url 'website:calendar' %}">カレンダー</a></li>
-      <li><a href="{% url 'website:calc_tokuten' %}">得点率計算</a></li>
+      <li><a href="{% url 'website:calendar' %}">出演者情報</a></li>
+      <li><a href="{% url 'website:calc_tokuten' %}">得点率ランキング</a></li>
+      <li><a href="{% url 'website:motor_comments_index' %}">モーター別・閲覧</a></li>
+      <li><a href="{% url 'website:motor_comments_total' %}">モーター情報・一覧</a></li>
+      <li><a href="{% url 'website:motor_comments' %}">モーター・入力</a></li>
       <li><a href="{% url 'website:gallery' %}">写真館</a></li>
-      <li><a href="{% url 'website:motor_comments' %}">モーター情報・閲覧</a></li>
-      <li><a href="{% url 'website:motor_comments' %}">モーター情報・入力</a></li>
     </ul>
   </nav>
   
   <!-- フッター -->
   <footer>
+    <p>ver.2　2025/9/23 update</p>
+    <p>モーター情報について開催タイトルを入力可能にしました</p>
+    <p>レスポンスを高速・最適化しました。</p>
+    <p>--------------------------------------------</p>
     <p>テストサイトです。</p>
     <p>不具合に関しまして、一切の責任はとれません。</p>
     <p>個人情報等は入力しないでください。</p>
+    
   </footer>
 </body>
 </html>

@@ -1,0 +1,90 @@
+:root{
+      --bg:#000;            /* 背景（黒） */
+      --blue:#3b82f6;       /* ボーダー色（青） */
+      --gap:12px;           /* マス間の余白 */
+      --radius:12px;        /* 角丸 */
+      --border:2px;         /* 枠線太さ */
+      --min:90px;           /* 最小サイズ（画面に応じて調整） */
+    }
+    html,body{ height:100%; }
+    body{
+      margin:0; background:var(--bg); color:#e5e7eb;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+      display:block;
+    }
+    
+    .grid{
+      display:grid;
+    width:min(1200px, 96vw);
+      margin:24px auto;
+      gap:var(--gap);
+      grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
+    }
+    .sq{
+      aspect-ratio:1 / 1;
+      border: var(--border) solid var(--blue);
+      border-radius: var(--radius);
+      background: transparent;
+      box-sizing:border-box; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:clamp(14px,2.8vw,20px); user-select:none;
+      transition: box-shadow .15s ease, transform .15s ease, background-color .15s ease;
+      cursor:pointer;
+    }
+    .sq:hover{
+      background: rgba(59,130,246,0.12);
+      box-shadow: 0 0 0 2px rgba(59,130,246,.35) inset, 0 0 18px rgba(59,130,246,.25);
+      transform: translateY(-1px);
+    }
+    .sq:focus{ outline:2px solid var(--blue); outline-offset:2px; }
+
+    /* モーダル（投稿一覧） */
+    dialog{ border:none; border-radius:16px; padding:0; background:#0b1220; color:#e5e7eb; width:min(720px, 94vw); box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    dialog::backdrop{ background:rgba(0,0,0,.6); }
+    .modalHead, .modalFoot{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #1f2937; }
+    .modalFoot{ border-top:1px solid #1f2937; border-bottom:none; }
+    .modalTitle{ font-weight:700; }
+    .modalBody{ padding:16px; display:grid; gap:12px; max-height:60vh; overflow:auto; }
+    .status{ color:#9ca3af; font-size:12px; }
+    .postsList{ display:flex; flex-direction:column; gap:10px; }
+    .postCard{ border:1px solid #1f2937; background:#0f172a; border-radius:12px; padding:12px; }
+    .postCard .meta{ font-size:12px; color:#9ca3af; margin-bottom:6px; }
+    .postCard .content{ white-space:pre-wrap; line-height:1.5; }
+    .modalFoot a{ color:#93c5fd; text-decoration:none; border:1px solid #1e3a5f; padding:8px 10px; border-radius:10px; }
+    .modalFoot button{ background:#0f172a; color:#e5e7eb; border:none; padding:8px 12px; border-radius:10px; }
+    .modalFoot button:hover{ background:#111827; }
+
+    /* 投稿フォーム */
+    .postForm{ border:1px solid #1f2937; background:#0f172a; border-radius:12px; padding:12px; }
+    .postForm .row{ display:grid; gap:6px; }
+    .postForm .row.right{ display:flex; justify-content:flex-end; }
+    .postForm label{ font-size:12px; color:#9ca3af; }
+    .postForm input, .postForm textarea{ background:#0f172a; color:#e5e7eb; border:1px solid #334155; border-radius:10px; padding:10px 12px; outline:none; }
+    .postForm textarea{ min-height:80px; resize:vertical; }
+    .postForm button{ font-size:16px; background:#0f172a; color:#e5e7eb; border:1px solid #334155; padding:8px 12px; border-radius:10px; }
+    .postForm button:hover{ background:#111827; }
+
+    /* 日付入力（カレンダー）をダークでも見やすく */
+    .postForm input[type="date"]{ color-scheme: dark; }
+    .postForm input[type="date"]::-webkit-calendar-picker-indicator{
+      filter: invert(78%) sepia(24%) saturate(1000%) hue-rotate(145deg) brightness(110%) contrast(100%);
+      cursor:pointer;
+      
+      /* iOS向けの追加ガード（WebKit判定） */
+
+}
+@media (max-width: 600px) {
+  .sq {
+    font-size: 24px; /* スマホ用に大きく */
+  }
+}
+.btn-link {
+    display:inline-block;
+    background:#0f172a;
+    color:yellow;
+    border:1px solid #334155;
+    padding:8px 12px;
+    border-radius:10px;
+    text-decoration:none;
+}
+.btn-link:hover {
+    background:#111827;
+}

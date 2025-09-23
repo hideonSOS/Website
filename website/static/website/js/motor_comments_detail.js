@@ -1,6 +1,6 @@
 const API_BASE = "/website/api/machines";
-    const machineNo = {{ machine_no }};   // ← Djangoから埋め込まれる
-    // ====== fetchPosts ======
+    const machineNo = document.getElementById("machine-data").dataset.machineNo;
+    
     async function fetchPosts(machineNo){
     try{
         const res = await fetch(`${API_BASE}/${machineNo}/posts`, { 
@@ -17,7 +17,7 @@ const API_BASE = "/website/api/machines";
     return [];
     }
 
-    // ====== 画面に表示 ======
+    
     async function renderPosts(machineNo){
     const output = document.getElementById("output");
     const posts = await fetchPosts(machineNo);
@@ -44,7 +44,12 @@ const API_BASE = "/website/api/machines";
         content.className = "content";
         content.textContent = p.content || "";
 
+        const titleEl = document.createElement("div");
+        titleEl.className = "title";
+        titleEl.textContent = `開催タイトル: ${p.title || "未設定"}`;
+
         card.appendChild(meta);
+        card.appendChild(titleEl);   // ★ 追加
         card.appendChild(content);
         list.appendChild(card);
         });
@@ -54,7 +59,7 @@ const API_BASE = "/website/api/machines";
     }
     }
 
-    // ====== 初期化（セレクトボックスに1～100号機を追加） ======
+    
     function initMachineSelect(){
     const select = document.getElementById("machineSelect");
     for(let i=1; i<=100; i++){
@@ -63,11 +68,10 @@ const API_BASE = "/website/api/machines";
         opt.textContent = `${i}号機`;
         select.appendChild(opt);
     }
-      // デフォルトで1号機を選択
+    
     select.value = machineNo;
     renderPosts(machineNo);
 
-      // 選択変更時に再描画
     select.addEventListener("change", (e)=>{
         const machineNo = e.target.value;
         renderPosts(machineNo);

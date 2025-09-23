@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <title>◯号機 投稿一覧</title>
-  <link res="stylesheet" href="{% static 'website/css/motor_comment_detail_style.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/motor_comments_detail.css' %}">
 </head>
 <body>
   <h1>モーター投稿一覧</h1>
-
+  <div id="machine-data" data-machine-no="{{ machine_no }}"></div>
   <!-- 号機を選ぶUI -->
   <div class="controls">
     <label for="machineSelect">モーターを選択：</label>
@@ -16,6 +16,7 @@
   </div>
 
   <div id="output">モーターを選択してください</div>
-<script src = '{% load "website/js/motor_comment_detail_script.js"}'></script>
+<script src = '{% static "website/js/motor_comments_detail.js" %}'></script>
+
 </body>
 </html>

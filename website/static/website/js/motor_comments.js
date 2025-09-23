@@ -13,6 +13,10 @@
       }
     }
 
+
+
+
+
     // ====== グリッド生成 ======
     const grid = document.getElementById("grid");
     for (let i = 1; i <= COUNT; i++) {
@@ -147,12 +151,21 @@
       form.onsubmit = async (e)=>{
         e.preventDefault();
         assertCSRF();
-        const payload = {
-          author: (authorInput?.value || "").trim() || "匿名",
-          racer: (racerInput?.value || "").trim(), 
-          content: (contentInput?.value || "").trim(),
-          scheduled_at: (dateInput?.value) ? dateInput.value : null
-        };
+        // 追加: 開催選択チェック
+        const selectedTitleId = titleSelect?.value;
+const selectedTitleText = titleSelect?.options[titleSelect.selectedIndex]?.textContent || "";
+if(!selectedTitleId){
+      alert("開催を選択してください");
+      titleSelect?.focus();
+      return;
+      }
+      const payload = {
+       title: selectedTitleText,   // DB保存用にテキストを渡す
+      author: (authorInput?.value || "").trim() || "匿名",
+      racer: (racerInput?.value || "").trim(), 
+      content: (contentInput?.value || "").trim(),
+      scheduled_at: (dateInput?.value) ? dateInput.value : null
+      };
         if(!payload.content){
           alert("本文を入力してください");
           contentInput?.focus();
@@ -162,6 +175,7 @@
           await createPost(currentMachine, payload);
           if(contentInput) contentInput.value = "";
           if(racerInput) racerInput.value = "";
+          if(titleSelect) titleSelect.selectedIndex = 0; // 追加
           await loadPostsIntoList(currentMachine);
         }catch(e){
           // createPost でアラート済み
@@ -208,11 +222,11 @@
       const dlg = document.getElementById("postsDialog");
       const closeBtn = document.getElementById("closeDialog");
       if(closeBtn) closeBtn.addEventListener("click", ()=> dlg.close());
-      if(dlg) dlg.addEventListener("click", (e)=>{
-        const r = dlg.getBoundingClientRect();
-        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-        if(!inside) dlg.close();
-      });
+      if (dlg) dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) {
+        dlg.close();
+      }
+    });
       assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
     })();
     

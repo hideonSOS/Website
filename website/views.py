@@ -4,7 +4,7 @@ from django.views.generic import ListView, CreateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic.edit import FormMixin
-from .models import Post, MotorComment
+from .models import Post, MotorComment, Title
 from .forms import PostForm
 from django.views import View
 from .scrape1 import scrape
@@ -17,12 +17,16 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import viewsets
 from .models import RaceDay, Event
 from .serializers import RaceDaySerializer, EventSerializer
-
+from .read_database import read_to_dict
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Motor_Comments(TemplateView):
     template_name = "website/motor_comments.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["titles"] = list(Title.objects.values_list("title", flat=True))
+        return context
 
 class IndexView(TemplateView):
     template_name = "website/index.html"
@@ -99,6 +103,7 @@ class MotorCommentListCreateAPI(View):
                 "content": c.content,
                 "scheduled_at": c.scheduled_at.isoformat() if c.scheduled_at else None,
                 "created_at": c.created_at.isoformat(),
+                "title": c.title or "",   # ★ 開催タイトルを追加
             }
             for c in qs
         ]
@@ -118,8 +123,9 @@ class MotorCommentListCreateAPI(View):
         author = (payload.get("author") or "匿名").strip() or "匿名"
         racer = (payload.get("racer") or "").strip() 
         scheduled = payload.get("scheduled_at")  # "YYYY-MM-DD" 想定
+        title = (payload.get("title") or "").strip() 
 
-        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer)
+        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer,title=title)
         if scheduled:
             try:
                 obj.scheduled_at = date.fromisoformat(scheduled)
@@ -135,6 +141,7 @@ class MotorCommentListCreateAPI(View):
             "content": obj.content,
             "scheduled_at": obj.scheduled_at.isoformat() if obj.scheduled_at else None,
             "created_at": obj.created_at.isoformat(),
+            'title':obj.title
         }, status=201)
 
 class MotorCommentDetailAPI(View):
@@ -170,6 +177,8 @@ class MotorCommentDetailView(TemplateView):
 
         # JSで使うために埋め込みたいならcontextに渡す
         context["machine_no"] = machine_no
+        context["titles"] = list(Title.objects.values_list("title", flat=True))
+    
         return context
     
 
@@ -186,4 +195,12 @@ class EventViewSet(viewsets.ModelViewSet):
     
 
 class Motor_Comments_Index(TemplateView):
+    
     template_name = 'website/motor_comments_index.html'
+    
+
+class Motor_Comments_Total(ListView):
+    model = MotorComment
+    template_name = 'website/motor_comments_total.html'
+    context_object_name = 'liston'
+    

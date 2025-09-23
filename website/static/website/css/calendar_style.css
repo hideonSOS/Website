@@ -18,12 +18,20 @@
     }
     .container{ max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
 
+
     /* ヘッダー */
     .header{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:12px; }
     .left, .right{ display:flex; align-items:center; gap:8px; }
     .brand{ font-size:18px; color:var(--muted); letter-spacing:.04em; }
     .monthLabel{ font-size:28px; font-weight:700; letter-spacing:.02em; }
-    .badge{ font-size:12px; padding:2px 8px; border:1px solid var(--grid); border-radius:999px; color:var(--muted); }
+    .badge{ 
+      font-size:12px; 
+      padding:2px 8px; 
+      color:#555;
+      border: none;           /* ボーダーを明示的に削除 */
+      background: transparent; /* 背景も透明に */
+      outline: none;          /* アウトラインも削除 */
+}
 
     button{ cursor:pointer; border:none; border-radius:12px; background:#0f172a; color:var(--fg); padding:10px 14px; font-weight:600; }
     button:hover{ background:#111827; }
@@ -38,6 +46,17 @@
     .weekday div{ text-align:center; padding:10px 0; font-size:13px; color:white; border-bottom:1px solid var(--grid); }
     .weekday .sun{ color:var(--sun); }
     .weekday .sat{ color:var(--sat); }
+    #modeBadge {
+    outline: none;        /* フォーカス枠を消す */
+    border: none;         /* 枠線を完全に消す */
+    background: none;  
+}
+button,
+a.btn-link {
+  border: none;
+  outline: none;
+  background: transparent;
+}
 
     /* カレンダー本体 */
     .grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top:8px; }

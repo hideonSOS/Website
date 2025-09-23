@@ -11,6 +11,7 @@ from .views import (
     RaceDayViewSet,
     EventViewSet,
     Motor_Comments_Index,
+    Motor_Comments_Total,
 )
 from django.http import HttpResponseNotFound
 
@@ -39,4 +40,6 @@ urlpatterns = [
     path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
     path("machines/", lambda request: HttpResponseNotFound()),
     path('api/', include(router.urls)),
+
+    path('motor_comments_total/', Motor_Comments_Total.as_view(),name='motor_comments_total')
 ]

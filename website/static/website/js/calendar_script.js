@@ -63,9 +63,12 @@
         badge.style.color = '#a7f3d0';
         badge.style.borderColor = '#134e5a';
       }else{
-        badge.textContent = 'スマホの方は画面を横にしてご覧ください。';
+        badge.innerHTML = 'スマホの方は<br>画面を横にしてご覧ください。';
         badge.style.color = '#fde68a';
         badge.style.borderColor = '#4b5563';
+        badge.style.whiteSpace = 'normal';   // 折り返し有効
+        badge.style.display = 'inline-block';
+        badge.style.maxWidth = '200px';      // 横幅制御
       }
     }
 

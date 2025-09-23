@@ -13,7 +13,7 @@ const labels = JSON.parse(document.getElementById('labels-json').textContent);
       data: {
         labels,
         datasets: [{
-          label: '得点率ランキング',
+          label: '得点率',
           data: data,
           // ★ バー見た目の最小調整（データは触らない）
           categoryPercentage: 0.82,
@@ -83,7 +83,7 @@ const labels = JSON.parse(document.getElementById('labels-json').textContent);
         ds.data = lineData; ds._thresholdValue = rounded;
       } else {
         myChart.data.datasets.push({
-          type:'line', label:'基準線', data: lineData,
+          type:'line', label:'想定ボーダー', data: lineData,
           borderColor:'#00e5ff', borderWidth:2, pointRadius:0, borderDash:[2,2], tension:0,
           _isThresholdLine:true, _thresholdValue: rounded
         });

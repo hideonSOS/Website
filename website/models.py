@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 # Create your models here.
 class Post(models.Model):
@@ -13,7 +14,7 @@ class MotorComment(models.Model):
     content     = models.TextField()                           # 本文（必須）
     scheduled_at= models.DateField(null=True, blank=True)      # 入力された日程（任意）
     created_at  = models.DateTimeField(auto_now_add=True)      # 生成日時
-
+    title = models.CharField(max_length=30, null=True, blank=True)
     class Meta:
         ordering = ["-created_at"]
 
@@ -46,3 +47,32 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.date} [{self.role}] {self.title}"
+
+class Title(models.Model):
+    # CSVの「ＩＤ」をそのまま主キーにする（年1回の差し替えに便利）
+    id = models.IntegerField(primary_key=True)
+    
+    organizer = models.CharField(
+        max_length=10,
+        choices=[("都市", "都市"), ("箕面", "箕面")],  # 必要なら増やせます
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    title = models.CharField(max_length=150)
+    days = models.PositiveSmallIntegerField()
+
+    class Meta:
+        verbose_name = "開催情報"
+        verbose_name_plural = "開催情報"
+        ordering = ["start_date", "id"]
+        # 重複登録の事故防止（必要に応じて調整）
+        constraints = [
+            # days_gate=1 <<< 1以上でないとダメ end_date__gte = ~ 必ず終了日が開始日より後
+            models.CheckConstraint(check=Q(days__gte=1), name="days_gte_1"),
+            models.CheckConstraint(check=Q(end_date__gte=models.F("start_date")),
+                                    name="end_after_start"),
+        ]
+        unique_together = ("organizer", "start_date", "title")
+
+    def __str__(self):
+        return f"{self.start_date} {self.title}"

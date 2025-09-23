@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'website/css/motor_comments_total.css' %}">
+</head>
+<body>
+    
+    <label for="titleFilter">開催タイトルで絞り込み:</label>
+    <select id="titleFilter">
+    <option value="">すべて表示</option>
+
+    {% for t in liston %}
+    <option value="{{ t.title }}">{{ t.title }}</option>
+    {% endfor %}
+    </select>
+
+    <ul id="postList">
+    {% for list in liston %}
+    <div class="post" data-title="{{ list.title }}">
+        <p>投稿者 {{ list.author }}</p>
+        <li>{{ list.machine_no }} 号機 ～ {{ list.racer }} : （{{ list.title }}）{{ list.scheduled_at }}</li>
+        <li>{{ list.content }}</li>
+        
+    </div>
+        {% empty %}
+        <li>データがありません。</li>
+    {% endfor %}
+    </ul>
+</body>
+<script src = "{% static 'website/js/motor_comments_total.js' %}"></script>
+</html>
