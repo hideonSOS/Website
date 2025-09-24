@@ -12,6 +12,7 @@ from .views import (
     EventViewSet,
     Motor_Comments_Index,
     Motor_Comments_Total,
+    grid_data_api
 )
 from django.http import HttpResponseNotFound
 
@@ -41,5 +42,6 @@ urlpatterns = [
     path("machines/", lambda request: HttpResponseNotFound()),
     path('api/', include(router.urls)),
 
-    path('motor_comments_total/', Motor_Comments_Total.as_view(),name='motor_comments_total')
+    path('motor_comments_total/', Motor_Comments_Total.as_view(),name='motor_comments_total'),
+    path('api/machines/grid-data', grid_data_api, name='grid_data'),
 ]

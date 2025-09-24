@@ -1,5 +1,4 @@
 // ====== 基本設定 ======
-const COUNT = 100; // 正方形の数（1～100）
 const API_BASE = "/website/api/machines"; // エンドポイントの共通プレフィックス
 
 // === CSRF ===
@@ -13,21 +12,68 @@ function assertCSRF(){
   }
 }
 
+// ====== バックエンドからデータ取得 ======
+async function fetchMachineData(){
+  try{
+    const res = await fetch(`${API_BASE}/grid-data`, { 
+      cache:"no-store", 
+      credentials:"same-origin" 
+    });
+    if(res.ok){ 
+      return await res.json(); 
+    }
+    console.error("Grid data fetch failed:", res.status);
+  }catch(e){ 
+    console.error("Grid data fetch error:", e); 
+  }
+  // フォールバック: エラー時は空のデータを返す
+  return { machine_numbers: [], display_values: [] };
+}
+
 // ====== グリッド生成 ======
-const grid = document.getElementById("grid");
-for (let i = 1; i <= COUNT; i++) {
-  const d = document.createElement("div");
-  d.className = "sq";
-  d.title = `#${i}`;
-  d.setAttribute("aria-label", `${i}号機`);
-  d.textContent = `${i}号機`;
-  d.tabIndex = 0;
-  d.setAttribute("role","button");
-  d.addEventListener("click", () => openPosts(i));
-  d.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPosts(i); }
-  });
-  grid.appendChild(d);
+async function generateGrid(){
+  const grid = document.getElementById("grid");
+  if(!grid) return;
+
+  // バックエンドからデータを取得
+  const data = await fetchMachineData();
+  const machineNumbers = data.machine_numbers || []; // 例: [1,2,3,4]
+  const displayValues = data.display_values || [];   // 例: [a,b,c,d]
+
+  // 既存のグリッドをクリア
+  grid.innerHTML = "";
+
+  // データに基づいてグリッドを生成
+  for (let idx = 0; idx < machineNumbers.length; idx++) {
+    const machineNo = machineNumbers[idx];
+    const displayValue = displayValues[idx] || ""; // 対応する値がない場合は空文字
+
+    const d = document.createElement("div");
+    d.className = "sq";
+    d.title = `#${machineNo}`;
+    d.setAttribute("aria-label", `${machineNo}号機`);
+    
+    // 機械名とディスプレイ値を設定
+    const machineText = document.createElement("span");
+    machineText.textContent = `${machineNo}号機`;
+    const numberText = document.createElement("span");
+    numberText.textContent = `${displayValue}％`;
+    numberText.style.color = "#fbbf24";  // 黄色
+    numberText.style.fontSize = "0.8em"; // サイズを小さく
+    
+    d.appendChild(machineText);
+    d.appendChild(numberText);
+    d.tabIndex = 0;
+    d.setAttribute("role","button");
+    d.addEventListener("click", () => openPosts(machineNo));
+    d.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { 
+        e.preventDefault(); 
+        openPosts(machineNo); 
+      }
+    });
+    grid.appendChild(d);
+  }
 }
 
 // ====== 投稿データ取得（詳細ページで使用される可能性があるため残す） ======
@@ -52,11 +98,14 @@ function fmtDateTime(dtStr){
 }
 
 // ====== メイン処理（ページ遷移版） ======
-function openPosts(machineNo){
+async function openPosts(machineNo){
   currentMachine = machineNo;
   
-  // 1～100の範囲チェック（念のため）
-  if (machineNo < 1 || machineNo > 100) {
+  // 有効な号機番号かチェック（バックエンドデータに基づく）
+  const data = await fetchMachineData();
+  const validMachines = data.machine_numbers || [];
+  
+  if (!validMachines.includes(machineNo)) {
     console.error(`無効な号機番号: ${machineNo}`);
     alert(`無効な号機番号です: ${machineNo}`);
     return;
@@ -70,8 +119,12 @@ function openPosts(machineNo){
 }
 
 // 画面ロード時のセットアップ
-(function(){
+(async function(){
   assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
+  
+  // グリッドを生成
+  await generateGrid();
+  
   console.log("🎯 グリッドが初期化されました");
   console.log("💡 グリッドをクリックすると詳細ページに遷移します");
 })();

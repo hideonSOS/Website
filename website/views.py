@@ -203,4 +203,14 @@ class Motor_Comments_Total(ListView):
     model = MotorComment
     template_name = 'website/motor_comments_total.html'
     context_object_name = 'liston'
-    
+
+
+from .scrape1 import motor_scrape
+URL='https://www.boatrace-suminoe.jp/asp/suminoe/contents/01history/ranking_motor.php'
+def grid_data_api(request):
+    df = motor_scrape(URL)
+    data = {
+        "machine_numbers": [i for i in df['number']],
+        "display_values": [i for i in df['ratio']]
+    }
+    return JsonResponse(data)
