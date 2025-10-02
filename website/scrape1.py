@@ -20,3 +20,12 @@ def motor_scrape(URL):
     df.sort_values('モーター  番号', inplace=True)
     df.columns=['number','ratio']
     return df
+
+
+def scrape_point():
+    import pandas as pd
+    URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
+    df = pd.read_html(URL)[0]
+    df = df.iloc[:,[1,2,5,7]]
+    df.columns=['number','name','point','count']
+    return df

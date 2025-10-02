@@ -72,12 +72,16 @@ const labels = JSON.parse(document.getElementById('labels-json').textContent);
 
       if (!value?.toString().trim() || Number.isNaN(num)) {
         if (idx !== -1) myChart.data.datasets.splice(idx, 1);
+        myChart.data.datasets[0].backgroundColor = 'rgba(54, 162, 235, 0.7)';
         myChart.update(); return;
       }
 
       const rounded = Math.round(num * 100) / 100;
       const lineData = Array(myChart.data.labels.length).fill(rounded);
-
+      const colors = myChart.data.datasets[0].data.map(v => 
+    v >= rounded ? 'rgba(255, 159, 64, 0.7)' : 'rgba(54, 162, 235, 0.7)'
+  );
+      myChart.data.datasets[0].backgroundColor = colors;
       if (idx !== -1) {
         const ds = myChart.data.datasets[idx];
         ds.data = lineData; ds._thresholdValue = rounded;

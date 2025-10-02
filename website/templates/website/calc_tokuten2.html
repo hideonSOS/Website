@@ -1,0 +1,494 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chart.js + Vue (固定軸対応)</title>
+    <!-- Vue3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background: #000000; /* 全体を黒 */
+        color: #e0e0e0; /* 文字は薄いグレー */
+        min-height: 100vh;
+        padding: 15px;
+        margin: 0;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        max-width: 1400px;
+        margin: auto;
+        height: calc(100vh - 30px);
+      }
+      .left-panel,
+      .right-panel {
+        background: #fff;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+
+        overflow-y: auto;
+      }
+      .left-panel {
+        flex: 0.35; /* 左は狭め */
+        min-width: 200px;
+        background: #1c1c1c; /* ダークグレー */
+      }
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+        flex: 1.65; /* 右は広め */
+        background: #1c1c1c; /* ダークグレー */
+      }
+      .chart-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .chart-scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+      }
+      .chart-container {
+        position: relative;
+        min-height: 1200px; /* 60項目分の高さを確保 */
+      }
+      #myChart {
+        height: 1200px !important;
+      }
+      .chart-fixed-axis {
+        height: 60px;
+        border-top: 1px solid #444; /* 薄いグレーの仕切り線 */
+        margin-top: 10px;
+        position: relative;
+      }
+      #axisChart {
+        height: 60px !important;
+        width: 100% !important;
+      }
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      label {
+        color: #f0f0f0; /* 明るめのグレー */
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    {% verbatim %}
+    <div id="app" class="container">
+      <!-- 左パネル -->
+      <div class="left-panel">
+        <h2>📊 入力</h2>
+        <div>
+          <label>ボーダー:</label>
+          <input
+            type="number"
+            v-model.number="borderValue"
+            min="0"
+            max="13"
+            step="0.01"
+          />
+        </div>
+        <div v-for="(add, i) in adds" :key="i" style="margin-top: 10px">
+          <label>{{ i+1 }} 号艇・着順点 : </label>
+          <select v-model.number="adds[i].value">
+            <option v-for="n in 12" :key="n" :value="n">{{ n }}</option>
+          </select>
+          <br />
+
+           <label>対象選手 : </label>
+          <select v-model="adds[i].target">
+            <option value="">未選択</option>
+           <option v-for="name in nameOptions" :key="name" :value="name">
+              {{ name }}
+            </option>
+          </select>
+
+        </div>
+      </div>
+
+      <!-- 右パネル -->
+      <div class="right-panel">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+          "
+        >
+          <div>
+            <h2>📈 得点率一覧表</h2>
+            <p style="font-size: 12px; color: #fff">{{ currentTime }}</p>
+          </div>
+          <div>
+            <!-- <button @click="updateData">更新</button> -->
+            <button @click="toggleSort">
+              {{ sortOrder ? "元に戻す ↺" : "降順 ▼" }}
+            </button>
+          </div>
+        </div>
+
+        <div class="chart-wrapper">
+          <!-- スクロール領域 -->
+          <div class="chart-scroll-area">
+            <div class="chart-container">
+              <canvas id="myChart"></canvas>
+            </div>
+          </div>
+          <!-- 固定軸 -->
+          <div class="chart-fixed-axis">
+            <canvas id="axisChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endverbatim %} 
+
+
+    {{ df_data|json_script:'data-json' }}
+    <script>
+
+      const data = JSON.parse(document.getElementById("data-json").textContent);
+    
+      const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
+const labels = ref([...data['name']]);   // 名前配列（Y軸ラベルは選手名）
+const points = ref([...data['point']]);  // 得点配列（数値）
+const counts = ref([...data['count']]);
+// 元の順序を “現在のデータ” でスナップショット（名前も得点も保持）
+const originalLabels = ref([...labels.value]);
+const originalPoints = ref([...points.value]);
+const originalCounts = ref([...counts.value]);
+
+      createApp({
+        setup() {
+          /** -------------------------
+           * データ定義（まとめて宣言）
+           * ------------------------- */
+          const borderValue = ref(13); // ボーダー値
+          const sortOrder = ref(null); // ソート状態
+          const currentTime = ref(""); // 現在時刻表示
+          // 左パネル：追加データ（targets は選手名の配列に）
+          const adds = reactive(
+            Array.from({ length: 6 }, () => ({ value: 0, target: "" }))
+          );
+
+          // 左パネル用：選手名のドロップダウン候補（右の labels はそのまま）
+          const nameOptions = computed(() => labels.value);
+const addedMap = computed(() => {
+            const m = Object.create(null);
+            labels.value.forEach(n => { m[n] = 0; });
+            adds.forEach(a => {
+              if (a.target && typeof a.value === "number") {
+                m[a.target] = (m[a.target] || 0) + a.value;
+              }
+            });
+            return m;
+          });
+          // 追加回数：選手ごとの件数（選択があれば1カウント／値が0でも出走としてカウント）
+          const addedCountMap = computed(() => {
+           const m = Object.create(null);
+            labels.value.forEach(n => { m[n] = 0; });
+            adds.forEach(a => {
+              if (a.target) m[a.target] = (m[a.target] || 0) + 1;
+            });
+            return m;
+          });
+          // 現在の平均（point / count）
+          const currentAvg = computed(() =>
+            labels.value.map((_, idx) => {
+              const p = Number(points.value[idx] ?? 0);
+              const c = Number(counts.value[idx] ?? 0);
+              return c ? p / c : 0;
+            })
+          );
+          // 追加適用後の平均 = (point + 追加合計) / (count + 追加回数)
+          const newAvg = computed(() =>
+            labels.value.map((name, idx) => {
+              const p  = Number(points.value[idx] ?? 0);
+              const c  = Number(counts.value[idx] ?? 0);
+              const ap = Number(addedMap.value[name] ?? 0);
+              const ac = Number(addedCountMap.value[name] ?? 0);
+              const denom = c + ac;
+              return denom ? (p + ap) / denom : 0;
+            })
+          );
+          // スタック表示用の差分（新平均 - 現平均）
+          const deltaAvg = computed(() =>
+            newAvg.value.map((v, i) => v - currentAvg.value[i])
+          );
+ // 平均 = point / count をリストで用意（分母0は 0 とする）
+          const averages = computed(() =>
+            labels.value.map((_, idx) => {
+              const p = Number(points.value[idx] ?? 0);
+              const c = Number(counts.value[idx] ?? 0);
+              return c ? p / c : 0;
+            })
+          );
+
+
+          // Chart.js インスタンス保持用
+          let chartInstance = null;
+          let axisInstance = null;
+
+          /** -------------------------
+           * 補助関数
+           * ------------------------- */
+          function getBorderColors() {
+            return labels.map((label) => {
+              const v = originalData[label];
+              return v > borderValue.value
+                ? "rgba(255,152,0,0.8)"
+                : "rgba(102,126,234,0.8)";
+            });
+          }
+
+          function parseTargets(str) {
+            if (!str) return [];
+            const items = [];
+            str.split(",").forEach((part) => {
+              if (part.includes("-")) {
+                const [s, e] = part.split("-").map(Number);
+                for (let i = s; i <= e; i++) items.push(`項目 ${i}`);
+              } else {
+                const n = Number(part);
+                if (n >= 1 && n <= 60) items.push(`項目 ${n}`);
+              }
+            });
+            return items;
+          }
+
+          function getDataset() {
+            const datasets = [
+              {
+                label: "元の値",
+                data: labels.map((l) => originalData[l]),
+                backgroundColor: getBorderColors(),
+                borderColor: getBorderColors().map((c) =>
+                  c.replace("0.8", "1")
+                ),
+                borderWidth: 2,
+              },
+            ];
+            adds.forEach((add, i) => {
+              const targets = parseTargets(add.targets);
+              const map = labels.map((l) =>
+                targets.includes(l) ? add.value : 0
+              );
+              datasets.push({
+                label: `追加${i + 1}`,
+                data: map,
+                backgroundColor: "rgba(200,200,200,0.4)",
+              });
+            });
+            return datasets;
+          }
+
+          /** -------------------------
+           * Chart描画処理
+           * ------------------------- */
+         
+
+          function renderChart() {
+            const ctx = document.getElementById("myChart");
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+              type: "bar",
+            data: { 
+                labels: labels.value, 
+                 datasets: (() => {
+                  // ❶ 上端を常に「新しい平均」にする（負の差分は描かない）
+                  const basePart = labels.value.map((_, i) =>
+                    Math.min(currentAvg.value[i], newAvg.value[i])
+                  );
+                  const incPart = labels.value.map((_, i) =>
+                    Math.max(newAvg.value[i] - currentAvg.value[i], 0)
+                  );
+                  return [
+                    {
+                      label: "平均（基準）",
+                      data: basePart,
+                      backgroundColor: "rgba(102,126,234,0.8)",  // 青
+                      borderColor: "rgba(102,126,234,1)",
+                      borderWidth: 2,
+                    },
+                    {
+                     label: "平均（増加分）",
+                      data: incPart,
+                      backgroundColor: "rgba(255,152,0,0.8)",    // オレンジ
+                      borderColor: "rgba(255,152,0,1)",
+                      borderWidth: 2,
+                    },
+                  ];
+                })()
+
+
+
+
+               },  
+
+
+
+
+              options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: "top",
+                    labels: { color: "#fff" }   // ★凡例ラベルを白に
+                  }
+                },
+                scales: {
+                  x: { stacked: true, display: false, max: 13 },
+                  y: {
+                    stacked: true,
+                    ticks: { autoSkip: false, font: { size: 14 }, color: "#fff"},
+                  },
+                },
+              },
+            });
+
+            const axisCtx = document.getElementById("axisChart");
+            if (axisInstance) axisInstance.destroy();
+            axisInstance = new Chart(axisCtx, {
+              type: "bar",
+              data: {
+                labels: labels.value,
+                datasets: [
+                  {
+                    data: labels.value.map(() => 0),
+                    backgroundColor: "rgba(0,0,0,0)",
+                  },
+                ],
+              },
+              options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: { enabled: false },
+                },
+                scales: {
+                  x: { beginAtZero: true, max: 13, ticks: { stepSize: 1,color: "#fff" } },
+                  y: { ticks: { color: "rgba(0,0,0,0)" } },
+                },
+              },
+            });
+          }
+
+          /** -------------------------
+           * UI操作関数
+           * ------------------------- */
+          function updateData() {
+            labels.forEach((label) => {
+              originalData[label] = Math.floor(Math.random() * 13);
+            });
+            sortOrder.value = null;
+            renderChart();
+            updateTime();
+          }
+          function toggleSort() {
+            if (sortOrder.value) {
+              // 元に戻す：初期スナップショットから完全復元（元の並び＋元の点数）
+              sortOrder.value = null;
+              labels.value = [...originalLabels.value];
+              points.value = [...originalPoints.value];
+              counts.value = [...originalCounts.value];
+            } else {
+              // 新平均（(point+追加)/(count+追加回数)）で降順ソート
+              sortOrder.value = "desc";
+              // 名前→元点 のマップを作成
+              const baseByName = Object.create(null);
+              labels.value.forEach((name, idx) => { baseByName[name] = points.value[idx]; });
+              
+              const countByName = Object.create(null);
+              labels.value.forEach((name, idx) => { countByName[name] = counts.value[idx]; });
+              const addedSumByName   = Object.create(null);
+              const addedTimesByName = Object.create(null);
+              labels.value.forEach(name => {
+                addedSumByName[name]   = addedMap.value[name] ?? 0;
+                addedTimesByName[name] = addedCountMap.value[name] ?? 0;
+              });
+              const avgOf = (name) => {
+                const p  = baseByName[name]  || 0;
+                const c  = countByName[name] || 0;
+                const ap = addedSumByName[name]   || 0;
+                const ac = addedTimesByName[name] || 0;
+                const denom = c + ac;
+                return denom ? (p + ap) / denom : 0;
+              };
+              const sortedNames = [...labels.value].sort((a, b) => avgOf(b) - avgOf(a));
+
+
+
+              // 並びを適用：labels は名前順、points は対応する元点を再配置
+              labels.value = sortedNames;
+              points.value = sortedNames.map(n => baseByName[n]);
+              counts.value = sortedNames.map(n => countByName[n]);
+            }
+            renderChart();
+          }
+          
+
+
+          function updateTime() {
+            const now = new Date();
+            currentTime.value = `${
+              now.getMonth() + 1
+            }月${now.getDate()}日 ${now.getHours()}時${now.getMinutes()}分 現在`;
+          }
+
+          /** -------------------------
+           * ライフサイクル
+           * ------------------------- */
+          onMounted(() => {
+            renderChart();
+            updateTime();
+            setInterval(updateTime, 60000);
+          });
+
+          watch([borderValue, adds], renderChart, { deep: true });
+
+          return {
+            borderValue,
+            adds,
+            currentTime,
+            updateData,
+            toggleSort,
+            sortOrder,
+            nameOptions,
+            averages
+            
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

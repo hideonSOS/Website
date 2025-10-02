@@ -7,7 +7,7 @@ from django.views.generic.edit import FormMixin
 from .models import Post, MotorComment, Title
 from .forms import PostForm
 from django.views import View
-from .scrape1 import scrape
+from .scrape1 import scrape, scrape_point
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse,HttpResponseNotFound
 import json
 from datetime import date
@@ -48,6 +48,16 @@ class CalcTokutenView(TemplateView):
         except:
             #print('読み込まれました')
             pass
+
+class CalcTokuten2(TemplateView):
+    template_name = 'website/calc_tokuten2.html'
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        df = scrape_point()
+        ctx['df_data'] = df.to_dict('list')
+        ctx['racer_count']=len(df.iloc[:,0])
+        return ctx
+
 
 
 class GalleryView(View):

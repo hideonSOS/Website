@@ -12,7 +12,8 @@ from .views import (
     EventViewSet,
     Motor_Comments_Index,
     Motor_Comments_Total,
-    grid_data_api
+    grid_data_api,
+    CalcTokuten2
 )
 from django.http import HttpResponseNotFound
 
@@ -44,4 +45,5 @@ urlpatterns = [
 
     path('motor_comments_total/', Motor_Comments_Total.as_view(),name='motor_comments_total'),
     path('api/machines/grid-data', grid_data_api, name='grid_data'),
+    path('calc-tokuten2/', CalcTokuten2.as_view(), name ='calc_tokuten2')
 ]
