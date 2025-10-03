@@ -26,6 +26,10 @@ def scrape_point():
     import pandas as pd
     URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
     df = pd.read_html(URL)[0]
-    df = df.iloc[:,[1,2,5,7]]
-    df.columns=['number','name','point','count']
+    df = df.iloc[:,[1,2,5,7,6,4]]
+    df.columns=['number','name','point','count','genten','percent']
+    df['genten'].fillna(0, inplace=True)
+    df = df[~df['percent'].isin(['帰郷'])]
+    df['point'] = df['point']-df['genten']
+    df = df[df.columns[[0,1,2,3]]]
     return df
