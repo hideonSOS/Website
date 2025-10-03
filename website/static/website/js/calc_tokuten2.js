@@ -232,50 +232,40 @@ createApp({
           },
           scales: {
             y: {
-                    stacked: true,
-                    ticks: {
-                      autoSkip: false,
-                      font: { size: 14 },
-                      color: "#fff",
-                      callback: function(value, index) {
-                        const total = newAvg.value[index];
-                        return `${labels.value[index]} (${total.toFixed(2)})`;
-                      }
-                    },
-                    grid: {
-                   color: (ctx) => {
-    if (ctx.index === 18) {
-      // 18行目だけ特別に太線用の色（ここでは白）
-      return "cyan";
-    }
-    if (ctx.index % 6 === 0) {
-      return "white";
-    }
-    return "rgba(255,255,255,0.1)";
-  },
-  lineWidth: (ctx) => {
-    if (ctx.index === 18) {
-      return 3;   // 18行目は太線
-    }
-    return 1;     // それ以外は通常
-  },
-  drawTicks: false,
-  drawBorder: false
+              stacked: true,
+              ticks: {
+                autoSkip: false,
+                font: { size: 14 },
+                color: "#fff",
+                callback: function(value, index) {
+                  const total = newAvg.value[index];
+                  return `${labels.value[index]} (${total.toFixed(2)})`;
+                }
+              },
+              grid: {
+                color: (ctx) => {
+                  if (ctx.index === 18) return "cyan"; // 18行目だけ色
+                  if (ctx.index % 6 === 0) return "white";
+                  return `rgba(255,255,255,0.1)`;
+                },
+                lineWidth: (ctx) => (ctx.index === 18 ? 3 : 1),
+                drawTicks: false,
+                drawBorder: false,
+              }
+            },
+            x: {
+              display: false,
+              beginAtZero: true ,  // ★ 追加：棒グラフ開始位置を0に固定
+              min: 0,              // ★ 追加：軸チャートと完全一致
+              max: 13              // ★ 追加：軸チャートと完全一致
+            }
+          }
 
 
 
 
-
-
-
-                    }
-                  },
-            
-
-
-
-          },
         },
+
       });
 
       const axisCtx = document.getElementById("axisChart");
@@ -300,12 +290,29 @@ createApp({
             tooltip: { enabled: false },
           },
           scales: {
-            x: {
-              beginAtZero: true,
+           x: {
+              min: 0,
               max: 13,
               ticks: { stepSize: 1, color: "#fff" },
-            },
-            y: { ticks: { color: "rgba(0,0,0,0)" } },
+            },      
+
+            y: {
+              type: "category",
+              ticks: { 
+                autoSkip: false,
+                font: { size: 14 },
+                color: "rgba(0,0,0,0)",  // ★ 透明にして見えなくする
+                callback: function(value, index) {
+                  const total = newAvg.value[index];
+                  return `${labels.value[index]} (${total.toFixed(2)})`;
+                }
+              },
+              grid: { display: false }
+
+
+
+            }
+
           },
         },
       });
