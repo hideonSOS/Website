@@ -1,0 +1,84 @@
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: #000000; /* 全体を黒 */
+        color: #e0e0e0; /* 文字は薄いグレー */
+        min-height: 100vh;
+        padding: 15px;
+        margin: 0;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        max-width: 1400px;
+        margin: auto;
+        height: calc(100vh - 30px);
+      }
+      .left-panel,
+      .right-panel {
+        background: #fff;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+      }
+      .left-panel {
+        flex: 0.35; /* 左は狭め */
+        min-width: 200px;
+        background: #1c1c1c; /* ダークグレー */
+      }
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+        flex: 1.65; /* 右は広め */
+        background: #1c1c1c; /* ダークグレー */
+      }
+      .chart-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .chart-scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+      }
+      .chart-container {
+        position: relative;
+        min-height: 1200px; /* 60項目分の高さを確保 */
+      }
+      #myChart {
+        height: 1200px !important;
+      }
+      .chart-fixed-axis {
+        height: 60px;
+        border-top: 1px solid #444; /* 薄いグレーの仕切り線 */
+        margin-top: 10px;
+        position: relative;
+      }
+      #axisChart {
+        height: 60px !important;
+        width: 100% !important;
+      }
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      label {
+        color: #f0f0f0; /* 明るめのグレー */
+        font-size: 13px;
+      }
