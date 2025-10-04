@@ -4,17 +4,19 @@ const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
 const labels = ref([...data["name"]]); // 名前配列（Y軸ラベルは選手名）
 const points = ref([...data["point"]]); // 得点配列（数値）
 const counts = ref([...data["count"]]);
+const cyakujyun = ref([...data["cyakujyun"]]);
+
 // 元の順序を “現在のデータ” でスナップショット（名前も得点も保持）
 const originalLabels = ref([...labels.value]);
 const originalPoints = ref([...points.value]);
 const originalCounts = ref([...counts.value]);
-
+const originalcyakujyun = ref([...cyakujyun.value]);
 createApp({
   setup() {
     /** -------------------------
      * データ定義（まとめて宣言）
      * ------------------------- */
-    const borderValue = ref(6); // ボーダー値
+    const borderValue = ref(6.00); // ボーダー値
     const sortOrder = ref(null); // ソート状態
     const currentTime = ref(""); // 現在時刻表示
     // 左パネル：追加データ（targets は選手名の配列に）
@@ -220,7 +222,7 @@ createApp({
                   borderWidth: 2,
                   borderDash: [6, 6],
                   label: {
-                    content: `ボーダー ${borderValue.value}`,
+                    content: `ボーダー ${borderValue.value.toFixed(2)}`,
                     enabled: true,
                     position: "start",
                     color: "white",
@@ -239,7 +241,8 @@ createApp({
                 color: "#fff",
                 callback: function(value, index) {
                   const total = newAvg.value[index];
-                  return `${labels.value[index]} (${total.toFixed(2)})`;
+                  const rank = cyakujyun.value[index] || "";
+                  return `${labels.value[index]} (${total.toFixed(2)}) 着順:${rank}`;
                 }
               },
               grid: {

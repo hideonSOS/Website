@@ -29,6 +29,7 @@
             step="0.01"
           />
         </div>
+        
         <div v-for="(add, i) in adds" :key="i" style="margin-top: 10px">
           <label>{{ i+1 }} 号艇・着順点 : </label>
           <select v-model.number="adds[i].value">
