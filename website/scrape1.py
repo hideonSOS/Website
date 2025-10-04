@@ -30,7 +30,7 @@ def scrape_point():
     df = dfs
     dfs.columns = [i for i in range(len(dfs.columns))]
     dfs = dfs[~dfs[4].isin(['帰郷'])]
-    dfs = dfs.iloc[:,8:]
+    dfs = dfs.iloc[:,7:]
     dfs = dfs.fillna(0).astype(int)
     values = dfs.iloc[:, 1:].values 
     arr = np.sort(values, axis=1)
