@@ -2,7 +2,7 @@ from django.db import models
 
 
 class RacerData(models.Model):
-    toban = models.IntegerField(max_length=8)
+    toban = models.IntegerField()
     name = models.CharField(max_length=20)
     kana = models.CharField(max_length=20)
     branch = models.CharField(max_length=10)
