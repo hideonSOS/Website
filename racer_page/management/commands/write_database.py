@@ -26,7 +26,7 @@ class Command(BaseCommand):
         df.columns = df.columns.map(lambda x: str(x).strip())  # 前後の空白除去
         df = df.loc[:, ~df.columns.duplicated(keep='first')]   # 重複カラム削除
         df = df[[c for c in df.columns if c != '' and c.lower() != 'unnamed: 0']]  # 空列除外
-        df.columns=['toban','name','','']
+        df.columns=['toban','name','kana','branch']
         print("🔥 Raw columns:", list(df.columns))
 
         RacerData.objects.all().delete()
