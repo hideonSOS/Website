@@ -27,7 +27,7 @@ class Command(BaseCommand):
         df = df.loc[:, ~df.columns.duplicated(keep='first')]   # 重複カラム削除
         df = df[[c for c in df.columns if c != '' and c.lower() != 'unnamed: 0']]  # 空列除外
         df.columns=['toban','name','','']
-
+        print("🔥 Raw columns:", list(df.columns))
 
         RacerData.objects.all().delete()
         RacerData.objects.bulk_create(RacerData(**rec) for rec in df.to_dict("records"))
