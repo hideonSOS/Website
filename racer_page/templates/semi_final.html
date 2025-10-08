@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>選手紹介</title>
+  <link rel="stylesheet" href="{% static 'racer_page/css/semi_final.css' %}">
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+  {{ context_data|json_script:"data-json" }}
+  <script>
+    const _ctx = JSON.parse(document.getElementById('data-json').textContent || '{}');
+
+    // 数値ソートで 1..18 の順に
+    const keys = Object.keys(_ctx).sort(
+      (a, b) => parseInt(a.split('_')[1], 10) - parseInt(b.split('_')[1], 10)
+    );
+    let initialRacers = keys.map(k => _ctx[k]).filter(Boolean);
+
+    // 18件にパディング
+    initialRacers = Array.from({ length: 18 }, (_, i) => initialRacers[i] || { name: '', toban: '' });
+  </script>
+{% verbatim %}
+<div id="app" class="container">
+  <h1>準 優 勝 戦 メンバー</h1>
+
+  <!-- 列＝レース（10R/11R/12R） -->
+  <div class="race-grid">
+    <div class="race-col" v-for="(group, gIdx) in groups" :key="gIdx">
+      <p class="race-title">{{ baseRace + gIdx }}レース</p>
+
+      <div class="players-col">
+        <div class="player-container" v-for="(r, i) in group" :key="i">
+          <div class="boat-number">{{ i + 1 }}号艇</div>
+          <div class="player-card">
+            <div class="player-photo">
+              <img v-if="r.toban" :src="`https://www.boatrace.jp/racerphoto/${r.toban}.jpg`" :alt="r.name || '選手'">
+              <span v-else>NO IMAGE</span>
+            </div>
+            <div class="player-name">{{ r.name }}</div>
+            <div class="player-number">{{ r.toban }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endverbatim %}
+
+  
+
+  <script>
+    const { createApp } = Vue;
+  createApp({
+    data() {
+      return {
+        racers: initialRacers, // 18件（不足は空でパディング済み）
+        baseRace: 10           // 先頭列のレース番号（10→10/11/12）
+      };
+    },
+    computed: {
+      // 6件ずつ [ [6件], [6件], [6件] ]
+      groups() {
+        const out = [];
+        for (let i = 0; i < this.racers.length; i += 6) {
+          out.push(this.racers.slice(i, i + 6));
+        }
+        return out;
+      }
+    }
+  }).mount('#app');
+
+  </script>
+</body>
+</html>

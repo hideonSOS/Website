@@ -48,21 +48,24 @@ class CalcTokutenView(TemplateView):
         except:
             #print('読み込まれました')
             pass
+        
 from django.utils.safestring import mark_safe
 class CalcTokuten2(TemplateView):
     template_name = 'website/calc_tokuten2.html'
     
-
+    
     def get_context_data(self, **kwargs):
-        
-        ctx = super().get_context_data(**kwargs)
-        from django.utils.safestring import mark_safe
-        df = scrape_point()
-        ctx['df_data'] = df.to_dict('list')
-        # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
-        # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
-        ctx['racer_count']=len(df.iloc[:,0])
-        return ctx
+        try:
+            ctx = super().get_context_data(**kwargs)
+            from django.utils.safestring import mark_safe
+            df = scrape_point()
+            ctx['df_data'] = df.to_dict('list')
+            # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
+            # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
+            ctx['racer_count']=len(df.iloc[:,0])
+            return ctx
+        except:
+            pass
 
 
 

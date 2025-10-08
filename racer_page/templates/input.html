@@ -1,0 +1,67 @@
+{% extends 'website/index.html' %}
+{% load static %}
+{% block content %}
+<link rel='stylesheet' href="{% static 'racer_page/css/input.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+
+
+<div class="form-container1">
+    <p class='koumoku'>優勝戦６選手入力フォーム</p>
+    <div id="app">
+        <form action='{% url "racer_page:racer_display" %}' method='post'>
+            {% csrf_token %}
+            <div class="input-grid">
+                <div v-for="(racer, index) in racers" :key="index" class="input-item">
+                    <label v-text="(index + 1) + '号艇:'"></label>
+                    <input 
+                        type='text' 
+                        :name="'racer_' + (index + 1)" 
+                        v-model="racer.value"
+                        placeholder='選手番号を入力'>
+                </div>
+            </div>
+            <button type="submit">送信</button>
+        </form>
+    </div>
+</div>
+
+<div class="form-container2">
+    <p class='koumoku'>準優勝戦18選手入力フォーム</p>
+    <div id="app2">
+        <form action='{% url "racer_page:semi_racer_display" %}' method='post'>
+            {% csrf_token %}
+            <div class="input-grid">
+                <div v-for="(racer, index) in racers" :key="index" class="input-item">
+                    <label v-text="((index % 6) + 1) + '号艇:'"></label>
+                    <input 
+                        type='text' 
+                        :name="'racer_' + (index + 1)" 
+                        v-model="racer.value"
+                        placeholder='選手番号'>
+                </div>
+            </div>
+            <button type="submit">送信</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+    
+    createApp({
+        data() {
+            return {
+                racers: Array(6).fill().map(() => ({ value: '' }))
+            }
+        }
+    }).mount('#app');
+    
+    createApp({
+        data() {
+            return {
+                racers: Array(18).fill().map(() => ({ value: '' }))
+            }
+        }
+    }).mount('#app2');
+</script>
+{% endblock %}

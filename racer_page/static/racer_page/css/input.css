@@ -1,0 +1,53 @@
+
+#app input {
+    width: 120px; /* 入力ボックスの幅に合わせる */
+}
+
+.koumoku{
+	font-size: 20px;
+	margin-top: 0; /* ←これで上の余白を消す */
+	color:skyblue;
+
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 250px);
+    grid-template-rows: repeat(6, auto);
+    grid-auto-flow: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.input-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+
+.form-container1,
+.form-container2 {
+    border: 2px solid #ccc;
+    padding: 20px;
+    margin: 20px 10px 20px 10px;
+    border-radius: 8px;
+    border-color:grey;
+    max-width: 780px; /* お好みで調整 */
+    color:;
+}
+
+#app button,
+#app2 button {
+    align-self: flex-end; /* ←flexの右端に固定 */
+    width: 100px;
+    height:30px;         /* inputと幅を合わせる */
+    margin-top: 10px;
+}
+
+#app button:hover,
+#app2 button:hover {
+    width:105px;
+
+}

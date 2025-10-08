@@ -31,11 +31,12 @@
           >
         </li>
         <li><a href="{% url 'website:motor_comments' %}">モーター・入力</a></li>
-        <li><a href="{% url 'website:gallery' %}">写真館</a></li>
+        <li><a href="{% url 'racer_page:racer_input' %}">出場選手表示</a></li>
       </ul>
     </nav>
-
+    {% block content %}
     <!-- フッター -->
+    {% endblock %}
     <footer>
       <p>ver.5　2025/10/04 update</p>
       <p>得点計算機能を拡充しました。</p>
