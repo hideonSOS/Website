@@ -61,10 +61,11 @@ class CalcTokuten2(TemplateView):
             df = scrape_point()
             ctx['df_data'] = df.to_dict('list')
             # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
-            # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
             ctx['racer_count']=len(df.iloc[:,0])
+            print(ctx)
             return ctx
-        except:
+        except Exception as e:
+            # print('error',e)
             pass
 
 

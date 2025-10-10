@@ -25,29 +25,29 @@ def motor_scrape(URL):
 def scrape_point():
     import pandas as pd
     import numpy as np
-    try:
-        URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
-        dfs = pd.read_html(URL)[0]
-        df = dfs
-        dfs.columns = [i for i in range(len(dfs.columns))]
-        dfs = dfs[~dfs[4].isin(['帰郷'])]
-        dfs = dfs.iloc[:,7:]
-        dfs = dfs.fillna(0).astype(int)
-        values = dfs.iloc[:, 1:].values 
-        arr = np.sort(values, axis=1)
-        result = ['_'.join(map(str, row[row != 0])) for row in arr]
-        #
-        df = df.iloc[:,[1,2,5,7,6,4]]
-        df.columns=['number','name','point','count','genten','percent']
-        
-        df['genten'].fillna(0,inplace=True)
-        df = df[~df['percent'].isin(['帰郷'])]
 
-        df['point'] = df['point']-df['genten']
-        
-        df = df[df.columns[[0,1,2,3]]]
-        df['cyakujyun'] = result
-        print(df)
-        return df
-    except:
-        print('通過')
+    URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
+
+    df = pd.read_html(URL)[0]
+
+    df.columns = [i for i in range(len(df.columns))]
+
+    # 減点列の空白を０埋め、得点-減点で現時点の得点を算出して再代入
+    df[6] = df[6].fillna(0).astype(int)
+    df[5] = df[5] - df[6]
+
+    # 着順の一覧表を取得して空白を０埋め
+    dfs = df.iloc[:,8:]
+    dfs = dfs.fillna('0')
+    # dfs = dfs.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
+    values = dfs.values 
+    arr = np.sort(values, axis=1)
+    result = ['_'.join(map(str, row[row != '0'])) for row in arr]
+    df['cyakujyun'] = result
+    df = df[~df[4].isin(['帰郷','賞除'])]
+
+    df = df.iloc[:,[1,2,5,7,-1]]
+
+    df.columns=['number', 'name', 'point', 'count', 'cyakujyun']
+    return df
+    
