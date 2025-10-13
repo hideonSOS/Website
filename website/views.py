@@ -65,7 +65,7 @@ class CalcTokuten2(TemplateView):
             print(ctx)
             return ctx
         except Exception as e:
-            # print('error',e)
+            print('error',e)
             pass
 
 

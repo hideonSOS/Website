@@ -40,8 +40,19 @@ def scrape_point():
     dfs = df.iloc[:,8:]
     dfs = dfs.fillna('0')
     # dfs = dfs.apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
-    values = dfs.values 
-    arr = np.sort(values, axis=1)
+    values = dfs.values
+
+    def clean_str(x):
+        # 浮動小数点で小数部が0なら int にして文字列化
+        if isinstance(x, float):
+            return str(int(x)) if x.is_integer() else str(x)
+        # それ以外（int, str）はそのまま文字列化
+        return str(x)
+
+    values_str = [[clean_str(x) for x in row] for row in values]
+
+
+    arr = np.sort(values_str, axis=1)
     result = ['_'.join(map(str, row[row != '0'])) for row in arr]
     df['cyakujyun'] = result
     df = df[~df[4].isin(['帰郷','賞除'])]
