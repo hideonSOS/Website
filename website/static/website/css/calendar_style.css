@@ -170,7 +170,32 @@ a.btn-link {
 
 /* === スマホ向けレスポンシブ設定 === */
 @media (max-width: 768px) {
+/* ▼▼▼ ここが修正の核心です ▼▼▼ */
 
+  /* 1. 日付を「左上」に確保する */
+  /* 元々右(right)にあった指定を解除して、左(left)に固定します */
+  .num {
+    right: auto;      /* 右寄せを解除 */
+    left: 8px;        /* 左端から8pxの位置へ */
+    text-align: left; /* 文字も左揃え */
+    z-index: 10;      /* タグより手前に表示 */
+  }
+
+  /* 2. 開催タグを「右上」に移動する（左上の混雑解消） */
+  /* 元々左(left)にあった指定を解除して、右(right)に移動します */
+  .raceTag {
+    left: auto;        /* 左寄せを解除（これが重要） */
+    right: 8px;        /* 右端から8pxの位置へ（日付と対角の場所） */
+    text-align: right; /* 文字を右揃え */
+    
+    /* 長すぎるタグが左の日付にぶつからないよう幅を制限 */
+    max-width: 65%;    
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* ▲▲▲ 修正ここまで ▲▲▲ */
   /* 1. 曜日ヘッダー（月〜日）を隠す */
   /* 縦並びになるので、上のヘッダーは不要になります */
   .weekday {
@@ -214,4 +239,8 @@ a.btn-link {
     display: block !important;
     border: 2px solid var(--accent);
   }
+  .day{
+    border:yellow solid 1px !important;
+  }
+
 }
