@@ -11,6 +11,10 @@ const originalLabels = ref([...labels.value]);
 const originalPoints = ref([...points.value]);
 const originalCounts = ref([...counts.value]);
 const originalcyakujyun = ref([...cyakujyun.value]);
+
+
+
+
 createApp({
   setup() {
     /** -------------------------
@@ -26,6 +30,7 @@ createApp({
     // 合格ライン計算用
     const selectedPlayer = ref("");
     const remainingRaces = ref(1);
+    
     const requiredPointsText = computed(() => {
       if (!selectedPlayer.value) return "";
       const idx = labels.value.indexOf(selectedPlayer.value);
@@ -43,6 +48,7 @@ createApp({
         return `必要 ${needed.toFixed(2)}点 (到達不可能)`;
       return `必要 ${needed.toFixed(2)}点`;
     });
+
     // 左パネル用：選手名のドロップダウン候補（右の labels はそのまま）
     const nameOptions = computed(() => labels.value);
     const addedMap = computed(() => {
@@ -58,6 +64,7 @@ createApp({
       });
       return m;
     });
+
     // 追加回数：選手ごとの件数（選択があれば1カウント／値が0でも出走としてカウント）
     const addedCountMap = computed(() => {
       const m = Object.create(null);
@@ -72,6 +79,7 @@ createApp({
       });
       return m;
     });
+
     // 現在の平均（point / count）
     const currentAvg = computed(() =>
       labels.value.map((_, idx) => {
@@ -80,6 +88,7 @@ createApp({
         return c ? p / c : 0;
       })
     );
+
     // 追加適用後の平均 = (point + 追加合計) / (count + 追加回数)
     const newAvg = computed(() =>
       labels.value.map((name, idx) => {
@@ -91,10 +100,12 @@ createApp({
         return denom ? (p + ap) / denom : 0;
       })
     );
+
     // スタック表示用の差分（新平均 - 現平均）
     const deltaAvg = computed(() =>
       newAvg.value.map((v, i) => v - currentAvg.value[i])
     );
+
     // 平均 = point / count をリストで用意（分母0は 0 とする）
     const averages = computed(() =>
       labels.value.map((_, idx) => {
@@ -111,15 +122,8 @@ createApp({
     /** -------------------------
      * 補助関数
      * ------------------------- */
-    function getBorderColors() {
-      return labels.map((label) => {
-        const v = originalData[label];
-        return v > borderValue.value
-          ? "rgba(255,152,0,0.8)"
-          : "rgba(102,126,234,0.8)";
-      });
-    }
-
+    // Note: originalData is not defined in the scope provided, assuming logic handled in render
+    
     function parseTargets(str) {
       if (!str) return [];
       const items = [];
@@ -135,71 +139,63 @@ createApp({
       return items;
     }
 
-    function getDataset() {
-      const datasets = [
-        {
-          label: "元の値",
-          data: labels.map((l) => originalData[l]),
-          backgroundColor: getBorderColors(),
-          borderColor: getBorderColors().map((c) => c.replace("0.8", "1")),
-          borderWidth: 2,
-        },
-      ];
-      adds.forEach((add, i) => {
-        const targets = parseTargets(add.targets);
-        const map = labels.map((l) => (targets.includes(l) ? add.value : 0));
-        datasets.push({
-          label: `追加${i + 1}`,
-          data: map,
-          backgroundColor: "rgba(200,200,200,0.4)",
-        });
-      });
-      return datasets;
-    }
-
     /** -------------------------
      * Chart描画処理
      * ------------------------- */
-
     function renderChart() {
       const ctx = document.getElementById("myChart");
       if (chartInstance) chartInstance.destroy();
+
+      // ▼▼▼ 追加: データ数に応じて高さを自動調整 ▼▼▼
+      // Gapを詰めるため1行あたり32pxとする（太さ25px + 隙間7px程度）
+      const rowCount = labels.value.length;
+      const totalHeight = Math.max(rowCount * 32, 600); 
+      
+      const container = document.querySelector('.chart-container');
+      if(container) container.style.minHeight = totalHeight + "px";
+      if(ctx) ctx.style.height = totalHeight + "px";
+      // ▲▲▲ 追加終わり ▲▲▲
+
       chartInstance = new Chart(ctx, {
         type: "bar",
         data: {
           labels: labels.value,
           datasets: (() => {
             const basePart = labels.value.map((_, i) =>
-   Math.min(currentAvg.value[i], newAvg.value[i])
- );
- const incPart = labels.value.map((_, i) =>
-   Math.max(newAvg.value[i] - currentAvg.value[i], 0)
- );
+              Math.min(currentAvg.value[i], newAvg.value[i])
+            );
+            const incPart = labels.value.map((_, i) =>
+              Math.max(newAvg.value[i] - currentAvg.value[i], 0)
+            );
 
- return [
-   {
-     label: "得点率",
-     data: basePart,
-     backgroundColor: "rgba(102,126,234,0.8)", // 青
-     borderColor: "rgba(102,126,234,1)",
-     borderWidth: 2,
-     stack: "score"
-   },
-   {
-     label: "増加分",
-     data: incPart,
-     backgroundColor: "rgba(255,152,0,0.8)", // オレンジ
-     borderColor: "rgba(255,152,0,1)",
-     borderWidth: 2,
-     stack: "score"
-   }
- ]; 
- 
-
-
-
-
- 
+            return [
+              {
+                label: "得点率",
+                data: basePart,
+                backgroundColor: "rgba(102,126,234,0.8)", // 青
+                borderColor: "rgba(102,126,234,1)",
+                borderWidth: 2,
+                // ▼ 太さと間隔の調整
+                barPercentage: 0.9,     // カテゴリ内の棒の割合を増やす
+                categoryPercentage: 0.9, // グリッド内のカテゴリ割合を増やす
+                maxBarThickness: 25,    // 棒の太さは25px（太め）を維持
+                // ▲
+                stack: "score"
+              },
+              {
+                label: "増加分",
+                data: incPart,
+                backgroundColor: "rgba(255,152,0,0.8)", // オレンジ
+                borderColor: "rgba(255,152,0,1)",
+                borderWidth: 2,
+                // ▼ 太さと間隔の調整
+                barPercentage: 0.9,
+                categoryPercentage: 0.9,
+                maxBarThickness: 25,
+                // ▲
+                stack: "score"
+              }
+            ];
           })(),
         },
         options: {
@@ -210,7 +206,7 @@ createApp({
             legend: {
               display: true,
               position: "top",
-              labels: { color: "#fff" }, // ★凡例ラベルを白に
+              labels: { color: "#fff" }, 
             },
             annotation: {
               annotations: {
@@ -234,6 +230,9 @@ createApp({
           },
           scales: {
             y: {
+              afterFit: (ctx) => {
+                ctx.width = window.innerWidth < 600 ? 100 : 300;
+              },
               stacked: true,
               ticks: {
                 autoSkip: false,
@@ -258,17 +257,12 @@ createApp({
             },
             x: {
               display: false,
-              beginAtZero: true ,  // ★ 追加：棒グラフ開始位置を0に固定
-              min: 0,              // ★ 追加：軸チャートと完全一致
-              max: 13              // ★ 追加：軸チャートと完全一致
+              beginAtZero: true, 
+              min: 0,
+              max: 12
             }
           }
-
-
-
-
         },
-
       });
 
       const axisCtx = document.getElementById("axisChart");
@@ -293,29 +287,28 @@ createApp({
             tooltip: { enabled: false },
           },
           scales: {
-           x: {
+            x: {
               min: 0,
-              max: 13,
+              max: 12,
               ticks: { stepSize: 1, color: "#fff" },
-            },      
-
+            },
             y: {
+              display: false, 
+              afterFit: (ctx) => {
+                ctx.width = window.innerWidth < 600 ? 100 : 300;
+              },
               type: "category",
               ticks: { 
                 autoSkip: false,
                 font: { size: 14 },
-                color: "rgba(0,0,0,0)",  // ★ 透明にして見えなくする
+                color: "rgba(0,0,0,0)", 
                 callback: function(value, index) {
                   const total = newAvg.value[index];
                   return `${labels.value[index]} (${total.toFixed(2)})`;
                 }
               },
               grid: { display: false }
-
-
-
             }
-
           },
         },
       });
@@ -325,39 +318,48 @@ createApp({
      * UI操作関数
      * ------------------------- */
     function updateData() {
-      labels.forEach((label) => {
-        originalData[label] = Math.floor(Math.random() * 13);
+      // originalData is not defined in scope, using points for logic simulation or needs specific impl
+      // Assuming user has correct logic for updateData or it connects to backend
+      labels.value.forEach((label, idx) => {
+         // Dummy logic preserving structure
+         // points.value[idx] = Math.floor(Math.random() * 13);
       });
       sortOrder.value = null;
       renderChart();
       updateTime();
     }
+
     function toggleSort() {
       if (sortOrder.value) {
-        // 元に戻す：初期スナップショットから完全復元（元の並び＋元の点数）
+        // 元に戻す
         sortOrder.value = null;
         labels.value = [...originalLabels.value];
         points.value = [...originalPoints.value];
         counts.value = [...originalCounts.value];
+        cyakujyun.value = [...originalcyakujyun.value];
       } else {
-        // 新平均（(point+追加)/(count+追加回数)）で降順ソート
+        // 降順ソート
         sortOrder.value = "desc";
-        // 名前→元点 のマップを作成
+        
+        // 名前をキーにしたマップを作成
         const baseByName = Object.create(null);
+        const countByName = Object.create(null);
+        const cyakujyunByName = Object.create(null);
+        
         labels.value.forEach((name, idx) => {
           baseByName[name] = points.value[idx];
+          countByName[name] = counts.value[idx];
+          cyakujyunByName[name] = cyakujyun.value[idx];
         });
 
-        const countByName = Object.create(null);
-        labels.value.forEach((name, idx) => {
-          countByName[name] = counts.value[idx];
-        });
         const addedSumByName = Object.create(null);
         const addedTimesByName = Object.create(null);
+        
         labels.value.forEach((name) => {
           addedSumByName[name] = addedMap.value[name] ?? 0;
           addedTimesByName[name] = addedCountMap.value[name] ?? 0;
         });
+
         const avgOf = (name) => {
           const p = baseByName[name] || 0;
           const c = countByName[name] || 0;
@@ -366,14 +368,16 @@ createApp({
           const denom = c + ac;
           return denom ? (p + ap) / denom : 0;
         };
+
         const sortedNames = [...labels.value].sort(
           (a, b) => avgOf(b) - avgOf(a)
         );
 
-        // 並びを適用：labels は名前順、points は対応する元点を再配置
+        // 並びを適用
         labels.value = sortedNames;
         points.value = sortedNames.map((n) => baseByName[n]);
         counts.value = sortedNames.map((n) => countByName[n]);
+        cyakujyun.value = sortedNames.map((n) => cyakujyunByName[n]);
       }
       renderChart();
     }
@@ -411,3 +415,11 @@ createApp({
     };
   },
 }).mount("#app");
+
+
+const btn1 = document.getElementById('btn1');
+const btn2 = document.getElementById('btn2');
+const dlg1 = document.getElementById('dlg1');
+const dlg_close_btn = document.getElementById('close_dlg1');
+btn1.addEventListener('click', function(){dlg1.showModal();})
+dlg_close_btn.addEventListener('click', function(){dlg1.close();})

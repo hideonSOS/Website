@@ -1,17 +1,11 @@
+{% extends 'website/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <title>Chart.js バーチャート</title>
-  
+{% block extra_css %}
   <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-</head>
-<body>
+  
+{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block content %}
   <div id="chart-container">
     <canvas id="myChart"></canvas>
   </div>
@@ -26,7 +20,7 @@
     <button class="mini-btn" disabled>開発中</button>
     <button class="mini-btn" disabled>開発中</button>
   </div>
-
+{% endblock %}
   <!-- ★ Django からの配列を安全に埋め込み（ここは your view が渡す変数名に合わせてください） -->
   {{ chart_labels|json_script:"labels-json" }}
   {{ chart_values|json_script:"values-json" }}

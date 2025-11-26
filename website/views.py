@@ -35,6 +35,9 @@ class IndexView(TemplateView):
 class Calendar(TemplateView):
     template_name = "website/calendar.html"
 
+
+
+
 class CalcTokutenView(TemplateView):
     template_name = "website/calc_tokuten.html"
     def get_context_data(self, **kwargs):
@@ -68,6 +71,20 @@ class CalcTokuten2(TemplateView):
             print('error',e)
             pass
 
+#非開催中スクレイピングできないときの処理
+from django.utils.safestring import mark_safe
+class Test_CalcTokuten2(TemplateView):
+    template_name = "website/calc_tokuten2.html"
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        from django.utils.safestring import mark_safe
+        from .scrape1 import test_scrape_point
+        df = test_scrape_point()
+        
+        ctx['df_data'] = df.to_dict('list')
+        ctx['racer_count'] = len(df.iloc[:,0])
+        print(ctx['df_data'])
+        return ctx
 
 
 class GalleryView(View):

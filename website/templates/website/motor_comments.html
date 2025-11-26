@@ -1,13 +1,10 @@
+{% extends 'website/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover" />
-  <title>100個の正方形グリッド</title>
-<link rel="stylesheet" href="{% static 'website/css/motor_comments.css' %}">
-</head>
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'website/css/motor_comments.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
   <div class="grid" id="grid" aria-label="100個の正方形グリッド"></div>
 
   <!-- 投稿一覧モーダル -->
@@ -56,7 +53,12 @@
       <button id="closeDialog" type="button">閉じる</button>
     </div>
   </dialog>
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'website/js/motor_comments.js' %}"></script>
+{% endblock %}
+
 {{ titles|json_script:"titles-data" }}
 
 </body>

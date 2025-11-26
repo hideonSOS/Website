@@ -1,13 +1,9 @@
+{% extends 'website/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'website/css/motor_comments_total.css' %}">
-</head>
-<body>
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'website/css/motor_comments_total.css' %}?v={% now 'U' %}">
+{% endblock %}
+{% block content %}
     
     <label for="titleFilter">開催タイトルで絞り込み:</label>
     <select id="titleFilter">
@@ -30,6 +26,8 @@
         <li>データがありません。</li>
     {% endfor %}
     </ul>
-</body>
+{% endblock %}
+{% block extra_js %}
 <script src = "{% static 'website/js/motor_comments_total.js' %}"></script>
+{% endblock %}
 </html>

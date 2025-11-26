@@ -6,12 +6,6 @@
   --border:2px;
   --min:90px;
 }
-html,body{ height:100%; }
-body{
-  margin:0; background:var(--bg); color:#e5e7eb;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
-  display:block;
-}
 
 .grid{
   display:grid;
@@ -19,15 +13,23 @@ body{
   margin:24px auto;
   gap:var(--gap);
   grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
+  /*--修正--*/
+  border:yellow 2px solid;
 }
 .sq{
   aspect-ratio:1 / 1;
   border: var(--border) solid var(--blue);
+  /*border:var(--border) solid orange;*/
   border-radius: var(--radius);
   background: transparent;
   box-sizing:border-box; display:flex; align-items:center; justify-content:center; flex-direction: column; font-weight:700; font-size:clamp(14px,2.8vw,20px); user-select:none;
   transition: box-shadow .15s ease, transform .15s ease, background-color .15s ease;
   cursor:pointer;
+}
+
+.sq.highlight {
+  border-color: orange; /* 赤色など目立つ色に変更 */
+  border-width: 3px;      /* 必要であれば太くする */
 }
 .sq:hover{
   background: rgba(59,130,246,0.12);
@@ -125,4 +127,5 @@ label[for="contentInput"]::after {
 }
 .btn-link:hover {
   background:#111827;
+
 }

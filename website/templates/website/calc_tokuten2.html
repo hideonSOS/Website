@@ -1,9 +1,6 @@
+{% extends 'website/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% block content %}
     <title>Chart.js + Vue (固定軸対応)</title>
     <!-- Vue3 CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -13,69 +10,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
   <link rel="stylesheet" href="{% static 'website/css/calc_tokuten2.css' %}">
   </head>
+
   <body>
     {% verbatim %}
     <div id="app" class="container">
-      <!-- 左パネル -->
-      <div class="left-panel">
-        <h2>📊 入力</h2>
-        <div>
-          <label>ボーダー:</label>
-          <input
-            type="number"
-            v-model.number="borderValue"
-            min="0"
-            max="13"
-            step="0.01"
-          />
-        </div>
-        
-        <div v-for="(add, i) in adds" :key="i" style="margin-top: 10px">
-          <label>{{ i+1 }} 号艇・着順点 : </label>
-          <select v-model.number="adds[i].value">
-            <option value="">未選択</option>
-            <option v-for="n in 12" :key="n" :value="n">{{ n }}</option>
-          </select>
-          <br />
-
-           <label>対象選手 : </label>
-          <select v-model="adds[i].target">
-            <option value="">未選択</option>
-           <option v-for="name in nameOptions" :key="name" :value="name">
-              {{ name }}
-            </option>
-          </select>
-
-        </div>
-          <!-- ▼ 合格ライン計算用のUIを左パネル下部に追加 -->
-      <hr style="margin: 15px 0; border-color: #444;" />
-      <div>
-        <label>対象選手 (合格ライン計算):</label>
-        <select v-model="selectedPlayer">
-          <option value="">未選択</option>
-          <option v-for="name in nameOptions" :key="name" :value="name">
-            {{ name }}
-          </option>
-        </select>
-      </div>
-      <div style="margin-top: 8px;">
-        <label>残り出走回数:</label>
-        <select v-model.number="remainingRaces">
-          <option :value="1">1</option>
-          <option :value="2">2</option>
-        </select>
-      </div>
-
-<div v-if="selectedPlayer" style="margin-top: 8px;">
-        <span :style="requiredPointsText.includes('無事故当確') ? 'color: limegreen; font-weight: bold;' : 'color: #fff;'">
-          必要得点: {{ requiredPointsText }}
-        </span>
-      </div>
-
-
-
-
-      </div>
+      
 
       <!-- 右パネル -->
       <div class="right-panel">
@@ -89,13 +28,21 @@
         >
           <div>
             <h2>📈 得点率一覧表</h2>
-            <p style="font-size: 12px; color: #fff">{{ currentTime }}</p>
+            <p id='timezone' style="font-size: 12px; color: #fff">{{ currentTime }}</p>
           </div>
-          <div>
+          <div id='btn-area'>
             <!-- <button @click="updateData">更新</button> -->
             <button @click="toggleSort">
               {{ sortOrder ? "元に戻す ↺" : "降順 ▼" }}
             </button>
+            <button id='btn1'>機能１</button>
+            <button id='btn2'>機能２</button>
+            <p>ボーダー</p>
+            <input 
+            type="number" 
+            id="borderInput" 
+            v-model.number="borderValue" 
+            step="0.01">
           </div>
         </div>
 
@@ -113,10 +60,20 @@
         </div>
       </div>
     </div>
+    <dialog id='dlg1'>
+      <div id='h_dlg1'>入力フォーム</div>
+      <div id='b_dlg1'></div>
+      <div id='f_dlg1'>
+        <button id='close_dlg1'>close</button>
+      </div>
+    </dialog>
     {% endverbatim %} 
+      {{ df_data|json_script:'data-json' }}
+    {% endblock %}
 
-
-    {{ df_data|json_script:'data-json' }}
+    
+    {% block extra_js %}
     <script src="{% static 'website/js/calc_tokuten2.js' %}"></script>
+    {% endblock %}
   </body>
 </html>

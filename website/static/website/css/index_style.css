@@ -4,16 +4,82 @@ header { background:#000; }
 header h1 { margin:0; font-size:24px; }
 header p { margin:5px 0 0; color:#87cefa; }
 
-nav { background:#000; border-bottom:1px solid #1e90ff; }
+nav { background:#000; border-bottom:1px solid #1e90ff; border-top:1px solid #1e90ff; width:100vw;}
 nav ul { list-style:none; margin:0; padding:0; display:flex; gap:20px; }
 nav a { color:#1e90ff; text-decoration:none; font-weight:bold; }
 nav a:hover { text-decoration:underline; }
 
 footer { background:#000; text-align:center; font-size:14px; border-top:1px solid #1e90ff; }
 footer p { margin:10px 0; color:#87cefa; }
-    /* 画面幅が600px以下のとき（スマホ想定） */
-@media (max-width: 600px) {
-nav a {
-    font-size: 14px;  /* 小さめフォントに調整 */
-}
+
+.ham-btn{display:none;}
+@media (max-width: 768px) {
+    .ham-nav{
+        position:fixed;
+        width:100vw;
+        height:100%;
+        background:rgba(0,0,0,0.9);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+        z-index:100;
+        opacity:0;
+        pointer-events:none;
+        transition:opacity 0.5s;
+        top:0;
+        right:0;
+    }
+    .ham-nav ul{
+        flex-direction:column;
+        gap:30px;
+        text-align: center;
+
+    }
+
+    .ham-btn{
+        display: block;
+        position: fixed; 
+        top: 20px;   /* 上からの距離（お好みで調整） */
+        right: 20px; /* 右からの距離（お好みで調整） */
+        
+        width:40px;
+        height:40px;
+        cursor:pointer;
+        background:transparent;
+        border:none;
+        z-index: 200;
+
+    }
+    .ham-btn:hover{
+        /*background-color: red;*/
+    }
+
+    .ham-btn span{
+        width:30px;
+        height:3px;
+        border:1px solid #1e90ff;
+        position:absolute;
+        left:5px;
+        background-color:#1e90ff;
+    }
+    .ham-nav.active{opacity: 1; pointer-events:auto;}
+    .ham-btn.active span:nth-of-type(1){
+        top:20px;
+        transform:rotate(45deg);
+    }
+    .ham-btn.active span:nth-of-type(2){
+        
+    }
+    .ham-btn.active span:nth-of-type(3){
+        top:20px;
+        transform:rotate(-45deg);
+    }
+    .ham-btn.active{
+        transition:opacity 0.3s;
+    }
+
+    .ham-btn span:nth-of-type(1){top:10px;}
+    .ham-btn span:nth-of-type(2){top:20px;}
+    .ham-btn span:nth-of-type(3){top:30px;}
 }

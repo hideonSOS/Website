@@ -13,7 +13,8 @@ from .views import (
     Motor_Comments_Index,
     Motor_Comments_Total,
     grid_data_api,
-    CalcTokuten2
+    CalcTokuten2,
+    Test_CalcTokuten2
 )
 from django.http import HttpResponseNotFound
 
@@ -25,6 +26,8 @@ app_name = 'website'
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
+
+    
     path("calc-tokuten/", CalcTokutenView.as_view(), name="calc_tokuten"),
     path("gallery/", GalleryView.as_view(), name="gallery"),
     path("calendar/", Calendar.as_view(), name="calendar"),
@@ -45,5 +48,5 @@ urlpatterns = [
 
     path('motor_comments_total/', Motor_Comments_Total.as_view(),name='motor_comments_total'),
     path('api/machines/grid-data', grid_data_api, name='grid_data'),
-    path('calc-tokuten2/', CalcTokuten2.as_view(), name ='calc_tokuten2')
+    path('calc-tokuten2/', Test_CalcTokuten2.as_view(), name ='calc_tokuten2')
 ]

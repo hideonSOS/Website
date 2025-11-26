@@ -1,84 +1,198 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  max-width: 1400px;
+  margin: auto;
+  height: calc(100vh - 30px);
+}
+.left-panel,
+.right-panel {
+  background: #fff;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+}
+.left-panel {
+  flex: 0.35; /* 左は狭め */
+  min-width: 200px;
+  background: #1c1c1c; /* ダークグレー */
+}
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+  flex: 1.65; /* 右は広め */
+  background: #1c1c1c; /* ダークグレー */
+}
+.chart-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+.chart-container {
+  position: relative;
+  min-height: 2000px; /* 60項目分の高さを確保 */
+}
+#myChart {
+  height: 2000px !important;
+}
+.chart-fixed-axis {
+  height: 60px;
+  border-top: 1px solid #444; /* 薄いグレーの仕切り線 */
+  margin-top: 10px;
+  position: relative;
+}
+#axisChart {
+  height: 60px !important;
+  width: 100% !important;
+}
+button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 5px;
+}
+button:hover {
+  opacity: 0.9;
+}
 
-      body {
-        font-family: "Arial", sans-serif;
-        background: #000000; /* 全体を黒 */
-        color: #e0e0e0; /* 文字は薄いグレー */
-        min-height: 100vh;
-        padding: 15px;
-        margin: 0;
-      }
-      .container {
-        display: flex;
-        flex-direction: row;
-        gap: 15px;
-        max-width: 1400px;
-        margin: auto;
-        height: calc(100vh - 30px);
-      }
-      .left-panel,
-      .right-panel {
-        background: #fff;
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-        overflow-y: auto;
-      }
-      .left-panel {
-        flex: 0.35; /* 左は狭め */
-        min-width: 200px;
-        background: #1c1c1c; /* ダークグレー */
-      }
-      .right-panel {
-        display: flex;
-        flex-direction: column;
-        min-height: 400px;
-        flex: 1.65; /* 右は広め */
-        background: #1c1c1c; /* ダークグレー */
-      }
-      .chart-wrapper {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-      }
-      .chart-scroll-area {
-        flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        position: relative;
-      }
-      .chart-container {
-        position: relative;
-        min-height: 1200px; /* 60項目分の高さを確保 */
-      }
-      #myChart {
-        height: 1200px !important;
-      }
-      .chart-fixed-axis {
-        height: 60px;
-        border-top: 1px solid #444; /* 薄いグレーの仕切り線 */
-        margin-top: 10px;
-        position: relative;
-      }
-      #axisChart {
-        height: 60px !important;
-        width: 100% !important;
-      }
-      button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-right: 5px;
-      }
-      button:hover {
-        opacity: 0.9;
-      }
-      label {
-        color: #f0f0f0; /* 明るめのグレー */
-        font-size: 13px;
-      }
+label {
+  color: #f0f0f0; /* 明るめのグレー */
+  font-size: 13px;
+}
+
+#dlg1[open] {
+  inset: auto;
+  padding: 3px;
+  background-color: black;
+  width: 100vw;
+  height: 200px;
+  border: solid 1px cyan;
+  position: fixed;
+  bottom: 0;
+  display: grid;
+  color: white;
+  grid-template-areas:
+    "header"
+    "body"
+    "footer";
+  grid-template-rows: auto 1fr auto;
+}
+
+#h_dlg1 {
+  grid-area: header;
+  border: solid 1px yellow;
+}
+#b_dlg1 {
+  grid-area: body;
+  border: solid 1px yellow;
+}
+#f_dlg1 {
+  grid-area: footer;
+  display: flex;
+  justify-content: flex-end; /* 右端へ */
+  border: solid 1px yellow;
+}
+#close_dlg1 {
+  justify-self: end;
+  border: solid red 2px;
+}
+
+#borderInput {
+  width: 20%;
+  font-size: 1.5em;
+}
+
+#btn-area {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 2px;
+  border: solid 1px yellow;
+  width: 70%;
+  height: 40px;
+}
+
+@media (min-width:768px) and (max-width:1028px){
+
+  #btn-area{
+    border:solid 1px orange;
+    width:100vw;
+    font-size: 1em;
+    gap:0;
+  }
+  #btn-area p{
+    width:30%;
+  }
+
+  h2{
+    display:none;
+  }
+  #timezone{
+    display:none;
+  }
+  
+
+  #myChart{
+    border:orange 1px solid;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+  }
+  button{
+    font-size: 1.2em;
+    width:20%;
+  }
+
+}
+
+
+
+@media (max-width:767px){
+
+  #btn-area{
+    border:solid 1px cyan;
+    width:100vw;
+    font-size: 0.6em;
+    gap:0;
+  }
+  #btn-area p{
+    width:40%;
+  }
+
+  h2{
+    display:none;
+  }
+  #timezone{
+    display:none;
+  }
+  
+.chart-container{
+    /*border:white 3px solid;*/
+  }
+  #myChart{
+    border:cyan 1px solid;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+  }
+  button{
+    font-size: 1.2em;
+    width:30%;
+  }
+
+}

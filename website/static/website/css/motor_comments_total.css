@@ -5,7 +5,7 @@ body {
     background-color: #000;   /* 背景を黒 */
     color: #fff;              /* 文字を白 */
     font-family: "Segoe UI", sans-serif;
-    margin: 20px;
+    /*margin: 20px;*/
 }
 
 /* セレクトボックス */

@@ -1,14 +1,11 @@
+{% extends 'website/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>アクアライブステーション・出演者</title>
+{% block extra_css %}
   
-<link rel="stylesheet" href="{% static 'website/css/calendar_style.css' %}"
-</head>
-<body>
+<link rel="stylesheet" href="{% static 'website/css/calendar_style.css' %}">
+{% endblock %}
+
+{% block content %}
   <div class="container">
     <div class="header" aria-label="カレンダーナビゲーション">
       <div class="left">
@@ -18,7 +15,7 @@
       </div>
       <div class="right">
         <span class="badge" id="modeBadge" title="サーバーと疎通できない場合は自動でローカル保存に切替">モード判定中…</span>
-        <p class="rotate-msg">スマホの方は<br>画面を横にしてご覧ください。</p>
+        
 
         <button id="todayBtn" aria-label="今月へ">今日へ</button>
         <a class="btn-link" href= "{% url 'website:index' %}">トップページ</a>
@@ -106,7 +103,10 @@
   </form>
 </dialog>
 
-
+{% endblock %}
+{% block extra_js %}
   <script src = '{% static "website/js/calendar_script.js" %}'></script>
+{% endblock %}
+
 </body>
 </html>

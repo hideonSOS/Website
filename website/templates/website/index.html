@@ -5,20 +5,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>業務アプリ アクアライブステーション</title>
-    <link rel="stylesheet" href="{% static 'website/css/index_style.css' %}" />
+    <link rel="stylesheet" href="{% static 'website/css/index_style.css' %}?v={% now 'U' %}" />
+    {% block extra_css %}
+    {% endblock %}
   </head>
   <body>
     <!-- ヘッダー -->
     <header>
       <h1>アクアライブステーション（業務アプリ）</h1>
-      <p>関係者用</p>
-    </header>
-
+    
+      <button class='ham-btn' id='js-btn'>
+        <span></span><span></span><span></span>
+      </button>
     <!-- ナビゲーション -->
-    <nav>
+    <nav class='ham-nav' id='js-nav'>
       <ul>
+        <li><a href="{% url 'website:index' %}">トップページ</a></li>
         <li><a href="{% url 'website:calendar' %}">出演者情報</a></li>
-        <li><a href="{% url 'website:calc_tokuten' %}">得点率ランキング</a></li>
+        <!-- <li><a href="{% url 'website:calc_tokuten' %}">得点率ランキング</a></li> -->
         <li><a href="{% url 'website:calc_tokuten2' %}">得点率計算</a></li>
         <li>
           <a href="{% url 'website:motor_comments_total' %}"
@@ -34,6 +38,7 @@
         <li><a href="{% url 'racer_page:racer_input' %}">出場選手表示</a></li>
       </ul>
     </nav>
+    </header>
     {% block content %}
     <!-- フッター -->
     {% endblock %}
@@ -45,5 +50,8 @@
       <p>不具合に関しまして、一切の責任はとれません。</p>
       <p>個人情報等は入力しないでください。</p>
     </footer>
+    <script src="{% static 'website/js/index.js' %}"></script>
+        {% block extra_js %}
+        {% endblock %}
   </body>
 </html>

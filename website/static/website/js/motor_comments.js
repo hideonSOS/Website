@@ -39,7 +39,7 @@ async function generateGrid(){
   const data = await fetchMachineData();
   const machineNumbers = data.machine_numbers || []; // 例: [1,2,3,4]
   const displayValues = data.display_values || [];   // 例: [a,b,c,d]
-
+  const targetIndex = 2;
   // 既存のグリッドをクリア
   grid.innerHTML = "";
 
@@ -49,7 +49,11 @@ async function generateGrid(){
     const displayValue = displayValues[idx] || ""; // 対応する値がない場合は空文字
 
     const d = document.createElement("div");
+    d.id = `box-${idx}`;
     d.className = "sq";
+    if (idx === targetIndex) {
+      d.classList.add("highlight");
+    }
     d.title = `#${machineNo}`;
     d.setAttribute("aria-label", `${machineNo}号機`);
     

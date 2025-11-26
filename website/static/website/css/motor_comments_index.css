@@ -7,15 +7,11 @@
       --min:90px;           /* 最小サイズ（画面に応じて調整） */
     }
     html,body{ height:100%; }
-    body{
-      margin:0; background:var(--bg); color:#e5e7eb;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
-      display:block;
-    }
+
     
     .grid{
       display:grid;
-    width:min(1200px, 96vw);
+      width:min(1200px, 96vw);
       margin:24px auto;
       gap:var(--gap);
       grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
