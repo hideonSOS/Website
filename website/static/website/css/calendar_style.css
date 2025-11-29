@@ -239,6 +239,8 @@ a.btn-link {
     display: block !important;
     border: 2px solid var(--accent);
   }
-  
+  .day.other {
+    display: none !important;
+  }
 
 }
