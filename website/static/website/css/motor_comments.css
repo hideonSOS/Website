@@ -6,7 +6,10 @@
   --border:2px;
   --min:90px;
 }
-
+.sq.highlight-orange {
+  border: 3px solid orange; /* オレンジ色の太枠 */
+  background: rgba(255, 165, 0, 0.1); /* お好みで薄い背景色をつけても分かりやすいです */
+}
 .grid{
   display:grid;
   width:min(1200px, 96vw);
@@ -27,10 +30,7 @@
   cursor:pointer;
 }
 
-/*.sq.highlight {*/
-  /*border-color: orange; /* 赤色など目立つ色に変更 */*/
-  /*border-width: 3px;      /* 必要であれば太くする */*/
-/*}*/
+
 .sq:hover{
   background: rgba(59,130,246,0.12);
   box-shadow: 0 0 0 2px rgba(59,130,246,.35) inset, 0 0 18px rgba(59,130,246,.25);

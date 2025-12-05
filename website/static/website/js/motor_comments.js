@@ -39,6 +39,10 @@ async function generateGrid(){
   const data = await fetchMachineData();
   const machineNumbers = data.machine_numbers || []; // 例: [1,2,3,4]
   const displayValues = data.display_values || [];   // 例: [a,b,c,d]
+
+  // ★追加: Pythonから送られてきた上位6機のリストを受け取る
+  const top6 = data.top6 || [];
+
   const targetIndex = 2;
   // 既存のグリッドをクリア
   grid.innerHTML = "";
@@ -51,6 +55,11 @@ async function generateGrid(){
     const d = document.createElement("div");
     d.id = `box-${idx}`;
     d.className = "sq";
+
+    // ★追加: もし現在のモーター番号がtop6に含まれていればクラスを追加
+    if (top6.includes(machineNo)) {
+      d.classList.add("highlight-orange"); // 専用クラス
+    }
     if (idx === targetIndex) {
       d.classList.add("highlight");
     }
@@ -77,6 +86,7 @@ async function generateGrid(){
       }
     });
     grid.appendChild(d);
+
   }
 }
 

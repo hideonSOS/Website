@@ -245,9 +245,17 @@ class Motor_Comments_Total(ListView):
 from .scrape1 import motor_scrape
 URL='https://www.boatrace-suminoe.jp/asp/suminoe/contents/01history/ranking_motor.php'
 def grid_data_api(request):
+    import pandas as pd
     df = motor_scrape(URL)
+    # --- 追加: 数値型へ変換（念の為）し、上位6つのモーター番号を取得 ---
+    # 万が一文字列型だった場合に備えて変換
+    df['ratio'] = pd.to_numeric(df['ratio'], errors='coerce')
+    # 2連対率('ratio')が高い順に6つ取得し、そのモーター番号('number')をリストにする
+    top6_list = df.nlargest(6, 'ratio')['number'].tolist()
     data = {
         "machine_numbers": [i for i in df['number']],
-        "display_values": [i for i in df['ratio']]
+        "display_values": [i for i in df['ratio']],
+        "top6": top6_list  # <--- これをJSに渡す
     }
+    print(data)
     return JsonResponse(data)
