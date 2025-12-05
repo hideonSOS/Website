@@ -2,7 +2,7 @@
 {% load static %}
 {% block extra_css %}
   
-<link rel="stylesheet" href="{% static 'website/css/calendar_style.css' %}">
+<link rel="stylesheet" href="{% static 'website/css/calendar_style.css' %}?v={% now 'U' %}">
 {% endblock %}
 
 {% block content %}

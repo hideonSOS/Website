@@ -14,7 +14,7 @@
 
     .container{ max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
 
-
+    .ham-nav{z-index: 1000;}
     /* ヘッダー */
     .header{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:12px; }
     .left, .right{ display:flex; align-items:center; gap:8px; }
@@ -70,7 +70,7 @@ a.btn-link {
     .today{ outline:2px solid var(--accent); outline-offset:-2px; }
 
     .events{ margin-top:22px; display:flex; flex-direction:column; gap:6px; }
-    .pill{ display:inline-flex; align-items:center; gap:8px; font-size:12px; background:#0d3b45; border:1px solid #134e5a; padding:6px 8px; border-radius:999px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+    .pill{ display:inline-flex; align-items:center; gap:8px; font-size:12px; background:#0d3b45; border:1px solid #134e5a; padding:6px 8px; border-radius:6px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; border:solid orange 1px;}
     .pill .time{ color:#a7f3d0; font-weight:700; }
 
     /* フッタの説明 */
@@ -107,7 +107,7 @@ a.btn-link {
   .day.minou { background:#0b1e2e; border:2px solid #27ee19; } /* 箕面開催=緑 */
 
     
-    .raceTag{ position:absolute; top:8px; left:10px; font-size:11px; padding:2px 6px; border-radius:8px; background:#102846; border:1px solid #1e3a5f; color:#93c5fd; }
+    .raceTag{ position:absolute; top:8px; right:2px; font-size:11px; padding:2px 6px; border-radius:8px; background:#102846; border:1px solid #1e3a5f; color:#93c5fd; }
   /* 入力ピッカーのアイコンを明るい青に */
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator{
@@ -118,11 +118,37 @@ a.btn-link {
   /* メモ表示 */
     .memo{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .noteIcon{ font-size:12px; opacity:.9; }
-  .num {
-  color: #00e5ff;  /* 例：ゴールド */
-  font-weight: bold; /* 太字にする場合 */
-  font-size:12px;
+.num {
+  /* 位置リセット */
+  position: static; 
+  right: auto;
+  left: 8px;
+  margin-bottom: 8px;
+  z-index: 10;
+  
+  /* ★ここが重要：Flexboxで「下揃え」にする */
+  display: flex;
+  align-items: baseline; /* 数字と曜日を下のラインで揃える */
+  gap: 4px;              /* 数字と曜日の間の余白 */
+
+  /* 数字本体のサイズ */
+  font-size: 2.0rem;     /* 数字を大きく */
+  font-weight: 800;      /* 太く */
+  line-height: 1;
+  color: #00e5ff;
 }
+
+/* 2. 曜日の設定 */
+.wk-label {
+  /* フォントサイズ設定 */
+  font-size: 12px;       /* ★0.2remは小さすぎるため、10px〜12px推奨 */
+  font-weight: normal;   /* 太字にしない */
+  color: #aaa;           /* 色を薄く */
+  
+  /* 不要なマージン削除（gapで制御するため） */
+  margin-left: 0; 
+}
+
 .header {
   position: sticky;
   top: 0;
@@ -167,6 +193,7 @@ a.btn-link {
   border-color: #555;
 }
 
+  
 
 /* === スマホ向けレスポンシブ設定 === */
 @media (max-width: 768px) {
@@ -223,24 +250,103 @@ a.btn-link {
   /* 5. 日付と曜日の見た目調整 */
   .num {
     position: static;      /* 絶対配置をやめる */
-    font-size: 16px;       /* 少し大きく */
-    margin-bottom: 8px;    /* 下に隙間 */
+    font-size: 1.5rem;       /* 少し大きく */
+      /* 下に隙間 */
     display: inline-block;
   }
   
   /* 曜日の色調整 */
-  .wk-label { font-size: 0.9em; margin-left: 4px; color: #aaa; }
+  .wk-label { font-size: 1.2rem; margin-left: 4px; color: #aaa; font-weight: normal;}
   
   /* 日曜・土曜の色付け（JSで特定クラスをつけるか、nth-childが使えないのでJS推奨だが、簡易的に） */
   /* 必要であればJS側で .day に .sun .sat クラスを追加するとより丁寧です */
   
   /* 6. 「今日」だけは予定がなくても表示したい場合（任意） */
-  .day.today {
-    display: block !important;
-    border: 2px solid var(--accent);
-  }
+/* 1. カード本体：背景は透明にして、枠線も消す */
+.day.today {
+  display: block !important;
+  position: relative;
+  
+  /* ▼重要：本体の背景は透明にする（後ろの ::after の黒色を見せるため） */
+  background: transparent !important; 
+  
+  border: none !important; /* 既存のボーダーを強制削除 */
+  border-radius: 12px;
+  z-index: 1;         /* 重なり順の基準 */
+  overflow: visible;  /* 光のはみ出しを許可 */
+}
+
+/* 2. 一番奥：光る虹色の枠（グラデーション） */
+.day.today::before {
+  content: "";
+  position: absolute;
+  
+  /* 枠の太さ分だけマイナスにする */
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  
+  z-index: -2; /* ★一番後ろ */
+  
+  border-radius: 12px;
+  background: linear-gradient(45deg, blue, red, orange, blue);
+  background-size: 300% 300%;
+  animation: gradient-border-move 3s ease infinite;
+}
+
+/* 3. 真ん中：黒い背景（中身を塗りつぶすマスク） */
+.day.today::after {
+  content: "";
+  position: absolute;
+  
+  /* カード本体と同じサイズにする */
+  top: 0; left: 0; right: 0; bottom: 0;
+  
+  z-index: -1; /* ★虹色より手前、文字より奥 */
+  
+  border-radius: 12px;
+  background: #0b0b0b; /* ここで「カードの背景色」を指定 */
+}
+.lanes{margin-top:5px; }
+/* アニメーション定義（変更なし） */
+@keyframes gradient-border-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
   .day.other {
     display: none !important;
   }
+  /* ▼▼▼ 追加：スマホでレーンを横並びにする設定 ▼▼▼ */
 
+  /* 1. レーン（枠）自体の向きを横並びにする */
+  .lane {
+    flex-direction: row;      /* 縦積み(column)から横並び(row)へ変更 */
+    align-items: center ;  /* 上揃え（centerにすると中央揃え） */
+    gap: 3px;     
+    padding:  0px;           /* タイトルと中身の間の余白 */
+    letter-spacing:   0.3rem;
+  }
+
+  /* 2. タイトル（MC、解説者など）の幅を確保する */
+  .laneTitle {
+    /* 固定幅、または最小幅を指定してラベルっぽくする */
+    min-width: 120px;          
+    /*font-weight: bold;*/
+    /* 位置の微調整（中身のpillと高さを合わせるため少し下げるなど） */
+    padding-top: 0px; 
+    text-align: center;  
+    align-items:center;
+    margin-top:0px;
+    font-size: 1.2rem;
+    letter-spacing:   0.1rem;
+  }
+
+  /* 3. 中身（pillが入っている部分）が残りの幅を使うようにする */
+  .laneBody {
+    flex: 1;                  /* 横幅いっぱいまで広げる */
+    
+    /* ↓もし中身のピルも「縦積み」ではなく「横に流したい」場合は以下も有効にしてください */
+    /* flex-direction: row; */
+    /* flex-wrap: wrap; */
+  }
+  .pill{font-size:1.2rem;}
 }

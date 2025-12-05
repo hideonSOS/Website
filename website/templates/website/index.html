@@ -20,21 +20,21 @@
     <!-- ナビゲーション -->
     <nav class='ham-nav' id='js-nav'>
       <ul>
-        <li><a href="{% url 'website:index' %}">トップページ</a></li>
+        <!-- <li><a href="{% url 'website:index' %}">トップページ</a></li> -->
         <li><a href="{% url 'website:calendar' %}">出演者情報</a></li>
         <!-- <li><a href="{% url 'website:calc_tokuten' %}">得点率ランキング</a></li> -->
-        <li><a href="{% url 'website:calc_tokuten2' %}">得点率計算</a></li>
+        <!-- <li><a href="{% url 'website:calc_tokuten2' %}">得点率計算</a></li> -->
         <li>
           <a href="{% url 'website:motor_comments_total' %}"
-            >モーター情報・一覧</a
+            >一覧（モーター情報）</a
           >
         </li>
         <li>
           <a href="{% url 'website:motor_comments_index' %}"
-            >モーター別・閲覧</a
+            >モーター別情報</a
           >
         </li>
-        <li><a href="{% url 'website:motor_comments' %}">モーター・入力</a></li>
+        <li><a href="{% url 'website:motor_comments' %}">入力（モーター情報）</a></li>
         <li><a href="{% url 'racer_page:racer_input' %}">出場選手表示</a></li>
       </ul>
     </nav>
@@ -43,10 +43,6 @@
     <!-- フッター -->
     {% endblock %}
     <footer>
-      <p>ver.6　2025/11/26 大型update</p>
-      <p>レスポンシブデザインへと移行中です。</p>
-      <p>得点率のページ修正中です。</p>
-      <p>--------------------------------------------</p>
       <p>テストサイトです。</p>
       <p>不具合に関しまして、一切の責任はとれません。</p>
       <p>個人情報等は入力しないでください。</p>
