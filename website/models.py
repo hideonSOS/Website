@@ -1,11 +1,6 @@
 from django.db import models
 from django.db.models import Q
 
-# Create your models here.
-class Post(models.Model):
-    title = models.CharField(max_length=200)   # 投稿タイトル
-    image = models.ImageField(upload_to='uploads/')  # media/uploads/ に保存
-    created_at = models.DateTimeField(auto_now_add=True)
 
 class MotorComment(models.Model):
     machine_no  = models.PositiveIntegerField(db_index=True)   # 号機番号

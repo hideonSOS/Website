@@ -1,10 +1,14 @@
-{% extends 'website/index.html' %}
+{% extends 'website/base.html' %}
 {% load static %}
-{% block content %}
-<link rel='stylesheet' href="{% static 'racer_page/css/input.css' %}">
+
+{% block title %}出場選手入力{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'racer_page/css/input.css' %}?v={% now 'U' %}">
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+{% endblock %}
 
-
+{% block content %}
 <div class="form-container1">
     <p class='koumoku'>優勝戦６選手入力フォーム</p>
     <div id="app">
@@ -13,9 +17,9 @@
             <div class="input-grid">
                 <div v-for="(racer, index) in racers" :key="index" class="input-item">
                     <label v-text="(index + 1) + '号艇:'"></label>
-                    <input 
-                        type='text' 
-                        :name="'racer_' + (index + 1)" 
+                    <input
+                        type='text'
+                        :name="'racer_' + (index + 1)"
                         v-model="racer.value"
                         placeholder='選手番号を入力'>
                 </div>
@@ -33,9 +37,9 @@
             <div class="input-grid">
                 <div v-for="(racer, index) in racers" :key="index" class="input-item">
                     <label v-text="((index % 6) + 1) + '号艇:'"></label>
-                    <input 
-                        type='text' 
-                        :name="'racer_' + (index + 1)" 
+                    <input
+                        type='text'
+                        :name="'racer_' + (index + 1)"
                         v-model="racer.value"
                         placeholder='選手番号'>
                 </div>
@@ -44,10 +48,12 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
     const { createApp } = Vue;
-    
+
     createApp({
         data() {
             return {
@@ -55,7 +61,7 @@
             }
         }
     }).mount('#app');
-    
+
     createApp({
         data() {
             return {

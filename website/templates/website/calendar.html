@@ -1,4 +1,4 @@
-{% extends 'website/index.html' %}
+{% extends 'website/base.html' %}
 {% load static %}
 {% block extra_css %}
   
@@ -18,7 +18,6 @@
         
 
         <button id="todayBtn" aria-label="今月へ">今日へ</button>
-        <a class="btn-link" href= "{% url 'website:index' %}">トップページ</a>
       </div>
     </div>
 

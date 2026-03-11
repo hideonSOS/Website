@@ -1,0 +1,105 @@
+{% extends 'website/base.html' %}
+{% load static live_score_tags %}
+
+{% block title %}得点率ライブ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'live_score/css/index.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+<div class="live-wrap">
+
+  <!-- 左：得点率表 -->
+  <div class="score-panel">
+    <h2>得点率ランキング</h2>
+    <div class="table-scroll">
+      <table id="scoreTable">
+        <thead>
+          <tr>
+            {% for h in headers %}
+            <th>{{ h }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody id="scoreBody">
+          {% for row in rows %}
+          <tr data-toban="{{ row.登録番号 }}">
+            {% for h in headers %}
+            <td>{{ row|get_item:h }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 右：入力フォーム -->
+  <div class="input-panel">
+    <h2>レース結果入力</h2>
+
+    <!-- レース番号選択 -->
+    <div class="race-select">
+      <p>レース番号を選択</p>
+      <div class="race-buttons">
+        {% for n in race_range %}
+        <button class="race-btn" data-race="{{ n }}">{{ n }}R</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 出走選手フォーム（選択後に表示） -->
+    <div id="raceForm" class="race-form" style="display:none;">
+      <p id="raceLabel"></p>
+
+      <!-- レース種別選択 -->
+      <div class="race-type-buttons">
+        <button class="race-type-btn" data-type="一般戦">一般戦</button>
+        <button class="race-type-btn" data-type="特別A戦">特別A戦</button>
+        <button class="race-type-btn" data-type="特別B戦">特別B戦</button>
+        <button class="race-type-btn" data-type="ドリーム戦">ドリーム戦</button>
+      </div>
+
+      <div class="status-msg" id="statusMsg"></div>
+      <table class="entry-table">
+        <thead>
+          <tr>
+            <th>着順</th>
+            <th>号艇</th>
+            <th>選手名</th>
+            <th>得点</th>
+            <th>入力先</th>
+          </tr>
+        </thead>
+        <tbody id="entryBody"></tbody>
+      </table>
+      <button id="previewBtn" class="preview-btn">確 認</button>
+      <button id="confirmBtn" class="confirm-btn" disabled>確 定</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- チャート表示ボタン（固定・独立） -->
+<a href="{% url 'live_score:graph' %}" class="chart-btn-fixed" target="_blank">チャート表示</a>
+
+<!-- 公式データ切り替えボタン（固定・独立） -->
+<button id="resetSessionBtn" class="reset-btn-fixed">初期化</button>
+
+<!-- 走目列名をJSに渡す -->
+<script id="run-cols-data" type="application/json">
+  {{ run_cols_json|safe }}
+</script>
+
+<!-- 手入力セルをJSに渡す -->
+<script id="manual-cells-data" type="application/json">
+  {{ manual_cells_json|safe }}
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'live_score/js/point_table.js' %}?v={% now 'U' %}"></script>
+<script src="{% static 'live_score/js/index.js' %}?v={% now 'U' %}"></script>
+{% endblock %}

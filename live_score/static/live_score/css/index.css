@@ -1,0 +1,267 @@
+/* ── レイアウト ── */
+.live-wrap {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+/* ── 得点率表パネル ── */
+.score-panel {
+  flex: 1;
+  min-width: 0;
+}
+.score-panel h2,
+.input-panel h2 {
+  color: #1e90ff;
+  margin-bottom: 12px;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+#scoreTable {
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+#scoreTable th,
+#scoreTable td {
+  border: 1px solid #333;
+  padding: 4px 8px;
+  text-align: center;
+}
+#scoreTable thead th {
+  background: #0f172a;
+  color: #93c5fd;
+}
+#scoreTable tbody tr:hover {
+  background: #111827;
+}
+#scoreTable td.filled {
+  color: #38bdf8;
+  font-weight: bold;
+  outline: 1px solid #38bdf8;
+  box-shadow:
+    inset 0 0 4px #38bdf8,
+    0 0 6px  #38bdf8,
+    0 0 14px #0ea5e9;
+}
+
+/* ── 入力パネル ── */
+.input-panel {
+  width: 520px;
+  flex-shrink: 0;
+}
+
+/* レース番号ボタン */
+.race-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.race-btn {
+  width: 70px;
+  height: 40px;
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.race-btn:hover  { background: #1e293b; }
+.race-btn.active {
+  background: transparent;
+  border-color: #38bdf8;
+  box-shadow:
+    0 0 6px  #38bdf8,
+    0 0 16px #38bdf8,
+    0 0 32px #0ea5e9;
+  color: #e0f2fe;
+  font-size: 1.2em;
+}
+
+/* レース種別ボタン */
+.race-type-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.race-type-btn {
+  height: 40px;
+  padding: 0 14px;
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.race-type-btn:hover { background: #1e293b; }
+.race-type-btn.active {
+  background: transparent;
+  border-color: #38bdf8;
+  box-shadow:
+    0 0 6px  #38bdf8,
+    0 0 16px #38bdf8,
+    0 0 32px #0ea5e9;
+  color: #e0f2fe;
+  font-size: 1.2em;
+}
+
+/* 入力フォーム */
+.race-form {
+  margin-top: 12px;
+}
+#raceLabel {
+  font-size: 16px;
+  font-weight: bold;
+  color: #22d3ee;
+  margin-bottom: 8px;
+}
+.status-msg {
+  color: #facc15;
+  font-size: 16px;
+  min-height: 24px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.entry-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  table-layout: fixed;
+}
+.entry-table th,
+.entry-table td {
+  border: 1px solid #333;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 36px;
+  line-height: 36px;
+}
+.entry-table thead th {
+  background: #0f172a;
+  color: #93c5fd;
+}
+/* 列幅固定（着順・号艇・選手名・登録番号・入力先） */
+.entry-table th:nth-child(1), .entry-table td:nth-child(1) { width: 52px; }
+.entry-table th:nth-child(2), .entry-table td:nth-child(2) { width: 90px; }
+.entry-table th:nth-child(3), .entry-table td:nth-child(3) { width: 110px; }
+.entry-table th:nth-child(4), .entry-table td:nth-child(4) { width: 72px; }
+.entry-table th:nth-child(5), .entry-table td:nth-child(5) { width: 100px; }
+.rank-cell {
+  font-weight: bold;
+  color: #fbbf24;
+}
+.boat-select {
+  background: #1e293b;
+  color: #e5e7eb;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+.boat-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+/* 確認ボタン（緑） */
+.preview-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  background: #15803d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+}
+.preview-btn:hover:not(:disabled) { background: #166534; }
+.preview-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* 確定ボタン（オレンジ） */
+.confirm-btn {
+  margin-top: 24px;
+  width: 100%;
+  padding: 10px;
+  background: #92400e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+}
+.confirm-btn:hover:not(:disabled) { background: #78350f; }
+.confirm-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* 固定ボタン共通 */
+.chart-btn-fixed,
+.reset-btn-fixed {
+  position: fixed;
+  bottom: 24px;
+  width: 130px;
+  padding: 12px 0;
+  background: #0f172a;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-decoration: none;
+  z-index: 999;
+}
+
+/* チャート表示（右端） */
+.chart-btn-fixed {
+  right: 24px;
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+  box-shadow: 0 0 6px #38bdf8, 0 0 16px #0ea5e9;
+}
+.chart-btn-fixed:hover {
+  box-shadow: 0 0 10px #38bdf8, 0 0 28px #38bdf8, 0 0 48px #0ea5e9;
+  color: #e0f2fe;
+}
+
+/* 手入力を削除（チャートボタンの左隣） */
+.reset-btn-fixed {
+  right: 166px;
+  color: #f87171;
+  border: 1px solid #f87171;
+  box-shadow: 0 0 6px #f87171, 0 0 16px #ef4444;
+}
+.reset-btn-fixed:hover {
+  box-shadow: 0 0 10px #f87171, 0 0 28px #f87171, 0 0 48px #ef4444;
+  color: #fecaca;
+}
+
+/* ── レスポンシブ ── */
+@media (max-width: 768px) {
+  .live-wrap {
+    flex-direction: column;
+  }
+  .input-panel {
+    width: 100%;
+  }
+}

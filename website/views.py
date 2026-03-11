@@ -1,129 +1,31 @@
 # website/views.py
-from django.views.generic import TemplateView
-from django.views.generic import ListView, CreateView, DeleteView
-from django.urls import reverse_lazy
-from django.shortcuts import redirect, render
-from django.views.generic.edit import FormMixin
-from .models import Post, MotorComment, Title
-from .forms import PostForm
+from django.views.generic import TemplateView, ListView
 from django.views import View
-from .scrape1 import scrape, scrape_point
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse,HttpResponseNotFound
+from .models import MotorComment, Title, RaceDay, Event
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse, HttpResponseNotFound
 import json
 from datetime import date
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import viewsets
-from .models import RaceDay, Event
 from .serializers import RaceDaySerializer, EventSerializer
-from .read_database import read_to_dict
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Motor_Comments(TemplateView):
     template_name = "website/motor_comments.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["titles"] = list(Title.objects.values_list("title", flat=True))
         return context
 
-class IndexView(TemplateView):
-    template_name = "website/index.html"
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class Calendar(TemplateView):
     template_name = "website/calendar.html"
 
-
-
-
-class CalcTokutenView(TemplateView):
-    template_name = "website/calc_tokuten.html"
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        try:
-            df = scrape()  # DataFrame
-            # 例: "得点率" 列をリスト化
-            context["chart_labels"] = df["選手名"].tolist()   # 横軸ラベル
-            context["chart_values"] = df["得点率"].tolist() # 縦棒の値
-            return context
-        except:
-            #print('読み込まれました')
-            pass
-        
-from django.utils.safestring import mark_safe
-class CalcTokuten2(TemplateView):
-    template_name = 'website/calc_tokuten2.html'
-    
-    
-    def get_context_data(self, **kwargs):
-        try:
-            ctx = super().get_context_data(**kwargs)
-            from django.utils.safestring import mark_safe
-            df = scrape_point()
-            ctx['df_data'] = df.to_dict('list')
-            # ctx['df_data'] = mark_safe(json.dumps(df.to_dict('list'), ensure_ascii=False))
-            ctx['racer_count']=len(df.iloc[:,0])
-            print(ctx)
-            return ctx
-        except Exception as e:
-            print('error',e)
-            pass
-
-#非開催中スクレイピングできないときの処理
-from django.utils.safestring import mark_safe
-class Test_CalcTokuten2(TemplateView):
-    template_name = "website/calc_tokuten2.html"
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        from django.utils.safestring import mark_safe
-        from .scrape1 import test_scrape_point
-        df = test_scrape_point()
-        
-        ctx['df_data'] = df.to_dict('list')
-        ctx['racer_count'] = len(df.iloc[:,0])
-        print(ctx['df_data'])
-        return ctx
-
-
-class GalleryView(View):
-    def get(self, request):
-        posts = Post.objects.all().order_by("-created_at")
-        form = PostForm()
-        return render(request, "website/gallery.html", {"posts": posts, "form": form})
-
-    def post(self, request):
-        # 投稿処理
-        if "title" in request.POST and request.FILES.get("image"):
-            form = PostForm(request.POST, request.FILES)
-            if form.is_valid():
-                form.save()
-                return redirect("website:gallery")
-
-        # 削除処理
-        if "delete_id" in request.POST:
-            post_id = request.POST.get("delete_id")
-            Post.objects.filter(id=post_id).delete()
-            return redirect("website:gallery")
-
-        return self.get(request)
-
-# 投稿フォーム
-class PostCreateView(CreateView):
-    model = Post
-    fields = ["title", "image"]
-    template_name = "website/post_form.html"
-    success_url = reverse_lazy("website:gallery")  # 投稿後はギャラリーへ戻る
-
-# 投稿削除
-class PostDeleteView(DeleteView):
-    model = Post
-    template_name = "website/post_confirm_delete.html"
-    success_url = reverse_lazy("website:gallery")
-
-
-# ^^^^^^^^^^^^^^^^^^^^^モーター情報に関わる処理^^^^^^^^^^^^^^^^^
 
 class MotorCommentListCreateAPI(View):
     """
@@ -136,18 +38,17 @@ class MotorCommentListCreateAPI(View):
             {
                 "id": c.id,
                 "author": c.author or "匿名",
-                "racer": c.racer or "",     # ★追加
+                "racer": c.racer or "",
                 "content": c.content,
                 "scheduled_at": c.scheduled_at.isoformat() if c.scheduled_at else None,
                 "created_at": c.created_at.isoformat(),
-                "title": c.title or "",   # ★ 開催タイトルを追加
+                "title": c.title or "",
             }
             for c in qs
         ]
         return JsonResponse(data, safe=False)
 
     def post(self, request, machine_no):
-        # Content-Type: application/json を想定
         try:
             payload = json.loads(request.body.decode("utf-8"))
         except json.JSONDecodeError:
@@ -158,28 +59,28 @@ class MotorCommentListCreateAPI(View):
             return HttpResponseBadRequest("content is required")
 
         author = (payload.get("author") or "匿名").strip() or "匿名"
-        racer = (payload.get("racer") or "").strip() 
-        scheduled = payload.get("scheduled_at")  # "YYYY-MM-DD" 想定
-        title = (payload.get("title") or "").strip() 
+        racer = (payload.get("racer") or "").strip()
+        scheduled = payload.get("scheduled_at")
+        title = (payload.get("title") or "").strip()
 
-        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer,title=title)
+        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer, title=title)
         if scheduled:
             try:
                 obj.scheduled_at = date.fromisoformat(scheduled)
             except ValueError:
-                # 必要なら 400 にしてもOK。ここでは黙って無視。
                 pass
         obj.save()
 
         return JsonResponse({
             "id": obj.id,
             "author": obj.author,
-            "racer": obj.racer, 
+            "racer": obj.racer,
             "content": obj.content,
             "scheduled_at": obj.scheduled_at.isoformat() if obj.scheduled_at else None,
             "created_at": obj.created_at.isoformat(),
-            'title':obj.title
+            "title": obj.title,
         }, status=201)
+
 
 class MotorCommentDetailAPI(View):
     """DELETE /api/machines/<machine_no>/posts/<pk>"""
@@ -188,10 +89,9 @@ class MotorCommentDetailAPI(View):
         obj.delete()
         return HttpResponse(status=204)
 
-    # 誤ってGETなどが来た時の保険
     def get(self, *args, **kwargs):
         return HttpResponseNotAllowed(["DELETE"])
-    
+
     def post(self, request, machine_no, pk):
         # /.../delete だけ許可（互換ルート）
         if str(request.path).endswith("/delete"):
@@ -199,7 +99,7 @@ class MotorCommentDetailAPI(View):
             obj.delete()
             return HttpResponse(status=204)
         return HttpResponseNotAllowed(["DELETE"])
-    
+
 
 class MotorCommentDetailView(TemplateView):
     template_name = "website/motor_comments_detail.html"
@@ -208,33 +108,31 @@ class MotorCommentDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
         machine_no = self.kwargs.get("machine_no")
 
-        # 範囲外なら404を返したい場合
         if not (1 <= machine_no <= 100):
             raise HttpResponseNotFound("指定された号機は存在しません")
 
-        # JSで使うために埋め込みたいならcontextに渡す
         context["machine_no"] = machine_no
         context["titles"] = list(Title.objects.values_list("title", flat=True))
-    
         return context
-    
+
 
 class RaceDayViewSet(viewsets.ModelViewSet):
     queryset = RaceDay.objects.all()
     serializer_class = RaceDaySerializer
 
+
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+
     def create(self, request, *args, **kwargs):
-        print("受信データ:", request.data)  # ← ここでログ出力
+        print("受信データ:", request.data)
         return super().create(request, *args, **kwargs)
-    
+
 
 class Motor_Comments_Index(TemplateView):
-    
     template_name = 'website/motor_comments_index.html'
-    
+
 
 class Motor_Comments_Total(ListView):
     model = MotorComment
@@ -243,19 +141,17 @@ class Motor_Comments_Total(ListView):
 
 
 from .scrape1 import motor_scrape
-URL='https://www.boatrace-suminoe.jp/asp/suminoe/contents/01history/ranking_motor.php'
+URL = 'https://www.boatrace-suminoe.jp/asp/suminoe/contents/01history/ranking_motor.php'
+
+
 def grid_data_api(request):
     import pandas as pd
     df = motor_scrape(URL)
-    # --- 追加: 数値型へ変換（念の為）し、上位6つのモーター番号を取得 ---
-    # 万が一文字列型だった場合に備えて変換
     df['ratio'] = pd.to_numeric(df['ratio'], errors='coerce')
-    # 2連対率('ratio')が高い順に6つ取得し、そのモーター番号('number')をリストにする
     top6_list = df.nlargest(6, 'ratio')['number'].tolist()
     data = {
         "machine_numbers": [i for i in df['number']],
         "display_values": [i for i in df['ratio']],
-        "top6": top6_list  # <--- これをJSに渡す
+        "top6": top6_list,
     }
-    print(data)
     return JsonResponse(data)

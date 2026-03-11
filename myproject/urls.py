@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('website/', include('website.urls')),
     path('racer_page/', include('racer_page.urls')),
+    path('live_score/', include('live_score.urls')),
 ]
 
 if settings.DEBUG:

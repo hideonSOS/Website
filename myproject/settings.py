@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'website',
-    'racer_page'
+    'racer_page',
+    'live_score',
 
 ]
 
@@ -115,11 +116,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# 開発時に追加の検索パスを指定
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'website', 'static'),
-]
 
 # 本番環境で collectstatic したファイルの置き場
 

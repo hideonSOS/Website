@@ -1,5 +1,8 @@
-{% extends 'website/index.html' %}
+{% extends 'website/base.html' %}
 {% load static %}
+
+{% block title %}モーター情報入力{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'website/css/motor_comments.css' %}?v={% now 'U' %}">
 {% endblock %}
@@ -12,7 +15,6 @@
     <div class="modalHead">
       <div class="modalTitle"><span id="dialogMachine"></span> への投稿を行う</div>
       <a id="openPageLink" class="btn-link" target="_blank" rel="noopener">一覧表示</a>
-
     </div>
     <div class="modalBody">
       <form id="postForm" class="postForm" novalidate>
@@ -32,9 +34,7 @@
         <select id="titleSelect" required>
           <option value="">開催を選択してください</option>
           {% for ev in titles %}
-            <option value="{{ ev }}">
-              {{ ev }}
-            </option>
+            <option value="{{ ev }}">{{ ev }}</option>
           {% endfor %}
         </select>
         <div class="row">
@@ -49,17 +49,13 @@
       <div id="postsList" class="postsList" aria-live="polite"></div>
     </div>
     <div class="modalFoot">
-      
       <button id="closeDialog" type="button">閉じる</button>
     </div>
   </dialog>
+
+  {{ titles|json_script:"titles-data" }}
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'website/js/motor_comments.js' %}"></script>
 {% endblock %}
-
-{{ titles|json_script:"titles-data" }}
-
-</body>
-</html>

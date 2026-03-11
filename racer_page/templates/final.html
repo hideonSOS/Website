@@ -2,23 +2,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>選手紹介</title>
-  <link rel="stylesheet" href="{% static 'racer_page/css/final.css' %}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>優勝戦メンバー</title>
+  <link rel="stylesheet" href="{% static 'racer_page/css/final.css' %}?v={% now 'U' %}">
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
 
-  <!-- ① Djangoデータを安全に埋め込み -->
   {{ context_data|json_script:"data-json" }}
   <script>
-    // ② JSで解凍して配列に整形（キー順に並べ替え）
     const _ctx = JSON.parse(document.getElementById('data-json').textContent || '{}');
     const initialRacers = Object.keys(_ctx).sort().map(k => _ctx[k]).filter(Boolean);
   </script>
 
-  <!-- ③ ここから先はVueで描画。Djangoは干渉させない -->
   {% verbatim %}
   <div id="app" class="container">
     <h1>優 勝 戦 メンバー</h1>
@@ -45,5 +42,6 @@
       }
     }).mount('#app');
   </script>
+
 </body>
 </html>

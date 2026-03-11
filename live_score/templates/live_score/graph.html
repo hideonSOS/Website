@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>得点率グラフ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #020617;
+      color: #e5e7eb;
+      font-family: sans-serif;
+    }
+    .graph-wrap {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .graph-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+    .graph-header h2 {
+      color: #1e90ff;
+      font-size: 20px;
+    }
+    .updated-at {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .border-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+    }
+    .border-wrap label {
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .border-wrap input {
+      width: 64px;
+      background: transparent;
+      color: #f87171;
+      border: none;
+      border-bottom: 1px solid #475569;
+      outline: none;
+      font-size: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .border-wrap input::placeholder { color: #475569; }
+    .chart-container {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      min-height: 0;
+    }
+    canvas {
+      width: 100% !important;
+    }
+    .no-data {
+      color: #facc15;
+      font-size: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="graph-wrap">
+  <div class="graph-header">
+    <h2>得点率グラフ</h2>
+    <span class="updated-at" id="updatedAt"></span>
+    <div class="border-wrap">
+      <label for="borderInput">ボーダー</label>
+      <input type="number" id="borderInput" step="0.01" min="0" placeholder="--">
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="no-data" id="noData" style="display:none;">データがありません。入力画面で確定を押してください。</div>
+    <canvas id="rankingChart" style="display:none;"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(async () => {
+  let data;
+  try {
+    const res = await fetch(`/live_score/api/ranking/?t=${Date.now()}`);
+    if (!res.ok) throw new Error('no data');
+    data = await res.json();
+  } catch {
+    document.getElementById('noData').style.display = 'block';
+    return;
+  }
+
+  const rows = data.rows || [];
+  if (rows.length === 0) {
+    document.getElementById('noData').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('updatedAt').textContent = `更新: ${data.updated_at || ''}`;
+
+  const labels  = rows.map(r => r['選手名'] || '');
+  const current = rows.map(r => parseFloat(r['得点率']) || 0);
+  const base    = rows.map(r => {
+    const b = parseFloat(r['base_得点率']);
+    return (isNaN(b) || b <= 0) ? parseFloat(r['得点率']) || 0 : b;
+  });
+
+  // 増加: 水色(base) + オレンジ(delta) / 減少: 赤(current) / 変化なし: 水色のみ
+  const cyanValues   = current.map((v, i) => v >= base[i] ? base[i] : 0);
+  const orangeValues = current.map((v, i) => {
+    const d = parseFloat((v - base[i]).toFixed(2));
+    return d > 0 ? d : 0;
+  });
+  const redValues    = current.map((v, i) => v < base[i] ? v : 0);
+
+  const canvas = document.getElementById('rankingChart');
+  canvas.style.display = 'block';
+
+  const headerH = document.querySelector('.graph-header').offsetHeight + 32;
+  canvas.height = window.innerHeight - headerH;
+
+  const ctx = canvas.getContext('2d');
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '得点率',
+          data: cyanValues,
+          backgroundColor: 'rgba(56,189,248,0.8)',
+          borderColor: '#38bdf8',
+          borderWidth: 1.5,
+          barPercentage: 0.64,
+          categoryPercentage: 0.64,
+          stack: 'bar',
+          order: 1,
+        },
+        {
+          label: '手入力加算分',
+          data: orangeValues,
+          backgroundColor: 'rgba(251,146,60,0.85)',
+          borderColor: '#f97316',
+          borderWidth: 1.5,
+          barPercentage: 0.64,
+          categoryPercentage: 0.64,
+          stack: 'bar',
+          order: 1,
+        },
+        {
+          label: '得点率減少',
+          data: redValues,
+          backgroundColor: 'rgba(239,68,68,0.85)',
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
+          barPercentage: 0.64,
+          categoryPercentage: 0.64,
+          stack: 'bar',
+          order: 1,
+        },
+        {
+          // ボーダーライン（初期値なし）
+          type: 'line',
+          label: 'ボーダー',
+          data: new Array(labels.length).fill(null),
+          borderColor: '#ef4444',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          order: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#cbd5e1',
+            filter: item => item.text !== 'ボーダー',
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const i = ctx.dataIndex;
+              if (ctx.datasetIndex === 0) return cyanValues[i] > 0   ? ` 得点率: ${base[i]}` : null;
+              if (ctx.datasetIndex === 1) return orangeValues[i] > 0 ? ` 手入力加算: +${orangeValues[i]}` : null;
+              if (ctx.datasetIndex === 2) return redValues[i] > 0
+                ? ` 得点率: ${current[i]} (↓${parseFloat((base[i] - current[i]).toFixed(2))})` : null;
+              return null;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: {
+            color: '#cbd5e1',
+            font: { size: 13 },
+            maxRotation: 45,
+            minRotation: 45,
+            autoSkip: false,
+          },
+          grid: { color: '#1e293b' },
+        },
+        y: {
+          stacked: true,
+          min: 0,
+          max: 12,
+          ticks: { color: '#cbd5e1' },
+          grid: { color: '#1e293b' },
+        },
+      },
+    },
+  });
+
+  // ボーダー入力 → 横線を更新
+  document.getElementById('borderInput').addEventListener('input', e => {
+    const val = parseFloat(e.target.value);
+    const borderDataset = chart.data.datasets[3];
+    borderDataset.data = new Array(labels.length).fill(isNaN(val) ? null : val);
+    chart.update();
+  });
+})();
+</script>
+</body>
+</html>

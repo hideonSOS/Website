@@ -1,7 +1,6 @@
 from django.contrib import admin
+from .models import MotorComment, RaceDay, Event, Title
 
-# Register your models here.
-from .models import Post, MotorComment, RaceDay, Event, Title
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
@@ -9,11 +8,6 @@ class TitleAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     list_filter = ("organizer", "start_date")
 
-@admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "created_at")
-    search_fields = ("title",)
-    list_filter = ("created_at",)
 
 @admin.register(MotorComment)
 class MotorCommentAdmin(admin.ModelAdmin):
@@ -21,11 +15,13 @@ class MotorCommentAdmin(admin.ModelAdmin):
     search_fields = ("author", "racer", "content", "title")
     list_filter = ("machine_no", "created_at")
 
+
 @admin.register(RaceDay)
 class RaceDayAdmin(admin.ModelAdmin):
     list_display = ("id", "date", "type", "title")
     search_fields = ("title",)
     list_filter = ("type", "date")
+
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):

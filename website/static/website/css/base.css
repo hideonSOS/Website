@@ -23,7 +23,7 @@ footer p { margin:10px 0; color:#87cefa; }
         justify-content:center;
         align-items:center;
         flex-direction:column;
-        z-index:100;
+        z-index:1000;
         opacity:0;
         pointer-events:none;
         transition:opacity 0.5s;
@@ -39,16 +39,16 @@ footer p { margin:10px 0; color:#87cefa; }
 
     .ham-btn{
         display: block;
-        position: fixed; 
-        top: 20px;   /* 上からの距離（お好みで調整） */
-        right: 20px; /* 右からの距離（お好みで調整） */
-        
+        position: fixed;
+        top: 20px;
+        right: 20px;
+
         width:40px;
         height:40px;
         cursor:pointer;
         background:transparent;
         border:none;
-        z-index: 200;
+        z-index: 1000;
 
     }
     .ham-btn:hover{
@@ -69,7 +69,7 @@ footer p { margin:10px 0; color:#87cefa; }
         transform:rotate(45deg);
     }
     .ham-btn.active span:nth-of-type(2){
-        
+
     }
     .ham-btn.active span:nth-of-type(3){
         top:20px;
