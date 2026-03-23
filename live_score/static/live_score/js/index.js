@@ -63,9 +63,11 @@ async function loadRaceProgram(raceNo, afterLoad) {
   currentRacers = data.racers;
   if (currentRacers.length === 0) {
     msg.textContent = '取得できませんでした。もう一度レース番号を押してください。';
+    msg.className = 'status-msg';
     return;
   }
-  msg.textContent = '';
+  msg.textContent = '読込完了';
+  msg.className = 'status-msg status-ok';
   renderEntryForm(currentRacers);
   if (afterLoad) afterLoad();
 }
@@ -127,8 +129,9 @@ function refreshPointCells() {
 }
 
 // ── 確認・確定の共通ヘルパー ──────────────────────────────
-let previewParams = null;
-let isConfirmed   = false;
+let previewParams       = null;
+let isConfirmed         = false;
+let participatingTobans = new Set();  // 確認時に出走したtoban一覧（確定後シアン用）
 const LS_KEY = 'liveScoreFormState';
 
 function _resetConfirm() {
@@ -220,6 +223,10 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
   if (params.results.length === 0) { alert('着順が入力されていません'); return; }
   if (!currentRaceType)            { alert('レース種別を選択してください'); return; }
 
+  // 出走者tobanを記録（確定後の得点・得点率シアンハイライト用）
+  participatingTobans = new Set(params.results.map(r => String(r.toban)));
+  console.log('[preview] participatingTobans:', [...participatingTobans]);
+
   // 確認対象セル（toban_slot）を収集
   const previewCells = new Set();
   document.querySelectorAll('.boat-select').forEach(sel => {
@@ -237,7 +244,7 @@ document.getElementById('previewBtn').addEventListener('click', async () => {
   const data = await res.json();
   if (data.error) { alert(data.error); return; }
   if (data.rows) {
-    updateScoreTable(data.rows, previewCells);
+    updateScoreTable(data.rows, previewCells, participatingTobans);
     previewParams = params;
     document.getElementById('confirmBtn').disabled = false;
   }
@@ -256,7 +263,7 @@ document.getElementById('confirmBtn').addEventListener('click', async () => {
   if (data.error) { alert(data.error); return; }
   if (data.rows) {
     if (data.manual_cells) MANUAL_CELLS = new Set(data.manual_cells);
-    updateScoreTable(data.rows);
+    updateScoreTable(data.rows, new Set(), participatingTobans);
     _saveFormState();
     _afterConfirm();
   }
@@ -280,21 +287,28 @@ document.getElementById('resetSessionBtn').addEventListener('click', async () =>
 });
 
 // ── 得点率表を更新 ────────────────────────────────────────
-function updateScoreTable(rows, extraCells = new Set()) {
+function updateScoreTable(rows, extraCells = new Set(), changedTobans = null) {
   const tbody   = document.getElementById('scoreBody');
   const headers = Array.from(document.querySelectorAll('#scoreTable thead th')).map(th => th.textContent);
   const cells   = new Set([...MANUAL_CELLS, ...extraCells]);
+  if (changedTobans) console.log('[updateScoreTable] changedTobans:', [...changedTobans], '/ row 登録番号 sample:', rows.slice(0,3).map(r => r['登録番号']));
 
   tbody.innerHTML = '';
   rows.forEach(row => {
     const tr = document.createElement('tr');
     tr.dataset.toban = row['登録番号'];
+    const tobanStr = String(row['登録番号']);
 
     headers.forEach(h => {
       const td = document.createElement('td');
       td.textContent = row[h] ?? '';
       if (RUN_COLS.includes(h) && cells.has(`${row['登録番号']}_${h}`)) {
         td.classList.add('filled');
+      }
+      // 確定時：出走した選手の得点・得点率セルをシアンでハイライト
+      if (changedTobans && changedTobans.has(tobanStr) && (h === '得点' || h === '得点率')) {
+        console.log('[changed] toban:', tobanStr, 'col:', h);
+        td.classList.add('changed');
       }
       tr.appendChild(td);
     });

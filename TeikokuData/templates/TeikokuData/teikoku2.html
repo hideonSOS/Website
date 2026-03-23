@@ -1,0 +1,188 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}{{ racer_name }} - 選手データ{% endblock %}
+
+{% block extra_css %}
+<style>
+  .teikoku-wrap { padding: 20px; }
+  .racer-title { font-size: 1.3em; margin-bottom: 20px; }
+  .racer-title span { font-size: 0.8em; color: #666; margin-left: 10px; }
+  .section-title { font-size: 1em; font-weight: bold; margin: 20px 0 8px; border-left: 4px solid #1a3a5c; padding-left: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85em; margin-bottom: 16px; }
+  th { background: #1a3a5c; color: #fff; padding: 7px 10px; text-align: center; white-space: nowrap; }
+  td { border: 1px solid #ccc; padding: 7px 10px; text-align: center; }
+  tr:nth-child(even) td { background: #f4f8ff; }
+  .back-link { margin-bottom: 16px; display: inline-block; color: #1a3a5c; }
+  .error-msg { color: red; padding: 20px; }
+
+  /* ── Chart ── */
+  .chart-section { margin: 24px 0 8px; border-left: 4px solid #1a3a5c; padding-left: 8px; font-weight: bold; }
+  .chart-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 12px 0 24px;
+  }
+  .chart-item {
+    display: flex; flex-direction: column; align-items: center;
+    background: #060f1c; border: 1px solid #00f5ff33; border-radius: 6px;
+    padding: 12px 10px 8px;
+    width: 130px;
+    box-shadow: 0 0 10px #00f5ff11;
+  }
+  .chart-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .78em; color: #00f5ff; letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+  .chart-rate {
+    font-family: 'Orbitron', monospace;
+    font-size: .85em; color: #00ff88;
+    margin-top: 6px;
+    text-shadow: 0 0 6px #00ff8866;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="teikoku-wrap">
+  <a class="back-link" href="{% url 'TeikokuData:teikoku1' %}">← 戻る</a>
+
+  {% if error %}
+    <p class="error-msg">取得エラー: {{ error }}</p>
+  {% else %}
+    <div class="racer-title">
+      【{{ regno }}】{{ racer_name }}
+      <br>
+      <img src="https://www.boatrace.jp/racerphoto/{{ regno }}.jpg"
+           alt="{{ racer_name }}"
+           style="width:100px; margin-top:8px; border:1px solid #ccc; border-radius:4px;">
+    </div>
+
+    {% if boat_rates %}
+    <!-- 艇番別 2連対率 円グラフ -->
+    <div class="chart-section">艇番別 2連対率</div>
+    <div class="chart-row">
+      {% for rate in boat_rates %}
+      <div class="chart-item">
+        <div class="chart-label">{{ forloop.counter }}号艇</div>
+        <canvas id="chart{{ forloop.counter }}" width="100" height="100"></canvas>
+        <div class="chart-rate">{{ rate }} %</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if boat_courses %}
+    <div class="chart-section">艇番別 進入コース</div>
+    <div class="chart-row">
+      {% for boat in boat_courses %}
+      <div class="chart-item">
+        <div class="chart-label">{{ forloop.counter }}号艇</div>
+        <canvas id="course-chart{{ forloop.counter }}" width="100" height="100"></canvas>
+        <div class="chart-rate" id="course-label{{ forloop.counter }}" style="font-size:.72em;"></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% for section in sections %}
+      {% if '艇番別進入コース' in section.title or 'コース別成績' in section.title %}
+      <div class="section-title">{{ section.title }}</div>
+      <table>
+        <thead>
+          <tr>{% for h in section.headers %}<th>{{ h }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in section.rows %}
+          <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+(function() {
+  // ── 艇番別2連対率 ──
+  {% if boat_rates %}
+  var rates      = {{ boat_rates|safe }};
+  var boatColors = ['#ffffff','#888888','#ff3333','#00f5ff','#ffe600','#00ff88'];
+  rates.forEach(function(rate, i) {
+    var ctx = document.getElementById('chart' + (i + 1));
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [rate, 100 - rate],
+          backgroundColor: [boatColors[i], '#0a1628'],
+          borderColor:      [boatColors[i], '#0a1628'],
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        animation: { duration: 800 },
+      }
+    });
+  });
+  {% endif %}
+
+  // ── 艇番別進入コース ──
+  {% if boat_courses %}
+  var courses      = {{ boat_courses|safe }};
+  var courseColors = ['#ffffff','#888888','#ff3333','#00f5ff','#ffe600','#00ff88','#444444'];
+  var courseLabels = ['1コース','2コース','3コース','4コース','5コース','6コース','その他'];
+
+  courses.forEach(function(counts, i) {
+    var ctx = document.getElementById('course-chart' + (i + 1));
+    if (!ctx) return;
+
+    // 出走数合計でパーセント化（小数1桁）
+    var total = counts.reduce(function(a, b) { return a + b; }, 0);
+    var pcts  = counts.map(function(v) {
+      return total > 0 ? Math.round(v / total * 1000) / 10 : 0;
+    });
+
+    // 最大コース特定
+    var maxIdx = pcts.indexOf(Math.max.apply(null, pcts));
+    var labelEl = document.getElementById('course-label' + (i + 1));
+    if (labelEl) {
+      labelEl.textContent = courseLabels[maxIdx] + '  ' + pcts[maxIdx] + '%';
+    }
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: courseLabels,
+        datasets: [{
+          data: pcts,
+          backgroundColor: courseColors,
+          borderColor:      '#030810',
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(item) {
+                return item.label + ': ' + item.raw + '%';
+              }
+            }
+          }
+        },
+        animation: { duration: 800 },
+      }
+    });
+  });
+  {% endif %}
+})();
+</script>
+{% endblock %}

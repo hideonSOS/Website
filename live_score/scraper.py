@@ -1,5 +1,6 @@
 import re
 from datetime import date, datetime
+from io import StringIO
 from pathlib import Path
 
 import pandas as pd
@@ -9,9 +10,11 @@ from bs4 import BeautifulSoup
 # ============================================================
 # テスト / 本番 切り替え設定
 # ============================================================
-TEST_MODE  = True
+TEST_MODE  = False
 TEST_DATE  = '20251012'   # テスト用：報知新聞社賞第61回ダイナミック敢闘旗 4日目
 VENUE_CODE = '12'         # 住之江
+
+RANK_URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
 
 SCORE_CSV_PATH = (
     Path(__file__).resolve().parent.parent
@@ -85,7 +88,49 @@ def _load_score_csv():
 
 
 def _scrape_score_table():
-    raise NotImplementedError("本番スクレイピングは未実装です")
+    """住之江競艇の得点率ページをスクレイピングして DataFrame を返す。"""
+    http_headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+    }
+    res = requests.get(RANK_URL, headers=http_headers, timeout=20)
+    res.raise_for_status()
+    res.encoding = res.apparent_encoding or 'utf-8'
+
+    # img タグ削除（選手名の女性アイコンなど）してからパース
+    soup = BeautifulSoup(res.text, 'html.parser')
+    table = soup.find('table', class_='list')
+    if table is None:
+        raise ValueError('得点率テーブルが見つかりません')
+    for img in table.find_all('img'):
+        img.decompose()
+
+    # マルチヘッダー（2行）で読み込み
+    dfs = pd.read_html(StringIO(str(table)), header=[0, 1])
+    df = dfs[0]
+
+    # MultiIndex 列をフラット化
+    # (順位, 順位) → 順位 / (節間成績, 初日) → 初日
+    new_cols = []
+    for top, sub in df.columns:
+        sub_s = str(sub)
+        if 'Unnamed' in sub_s or str(top) == sub_s:
+            new_cols.append(str(top))
+        else:
+            new_cols.append(sub_s)
+    df.columns = new_cols
+
+    # 列名を RUN_COLUMNS に合わせてリネーム
+    col_map = {
+        '初日':    '1日目_1走', '初日.1':  '1日目_2走',
+        '2日目':   '2日目_1走', '2日目.1': '2日目_2走',
+        '3日目':   '3日目_1走', '3日目.1': '3日目_2走',
+        '4日目':   '4日目_1走', '4日目.1': '4日目_2走',
+        '5日目':   '5日目_1走', '5日目.1': '5日目_2走',
+        '6日目':   '6日目_1走', '6日目.1': '6日目_2走',
+    }
+    df = df.rename(columns=col_map)
+
+    return df
 
 
 # ============================================================

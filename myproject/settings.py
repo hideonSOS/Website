@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'website',
     'racer_page',
     'live_score',
+    'IntraNet',
+    'TeikokuData',
 
 ]
 
