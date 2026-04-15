@@ -12,6 +12,8 @@ urlpatterns = [
     path('live_score/', include('live_score.urls')),
     path('IntraNet/', include('IntraNet.urls')),
     path('TeikokuData/', include('TeikokuData.urls')),
+    path('chat/', include('chat.urls')),
+    path('gallery/', include('gallery.urls')),
 ]
 
 if settings.DEBUG:

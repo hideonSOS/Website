@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'live_score',
     'IntraNet',
     'TeikokuData',
-
+    'chat',
+    'gallery',
 ]
 
 MIDDLEWARE = [

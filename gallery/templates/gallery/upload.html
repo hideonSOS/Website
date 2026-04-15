@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>画像アップロード</title>
+  <style>
+    :root {
+      --main-blue: #0056b3;
+      --bg-gradient: linear-gradient(135deg, #004e92, #000428);
+      --card-bg: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      font-family: sans-serif;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 400px;
+      background-color: #f8f9fa;
+      min-height: 80vh;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .blog-header {
+      background-color: var(--main-blue);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .timeline { padding: 15px; flex: 1; }
+
+    .blog-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .post-image {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+    }
+
+    .post-content { padding: 15px; }
+    .post-date { font-size: 0.85rem; color: var(--main-blue); font-weight: bold; display: block; margin-bottom: 6px; }
+
+    .no-image-msg {
+      text-align: center;
+      color: #999;
+      padding: 40px 0;
+      font-size: 0.95rem;
+    }
+
+    /* FAB */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      right: calc(50% - 180px);
+      width: 60px; height: 60px;
+      background-color: var(--main-blue);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 30px; text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 400px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 16px;
+    }
+
+    .modal-header {
+      background-color: var(--main-blue);
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header span.close {
+      cursor: pointer;
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .modal-body { padding: 15px; }
+
+    #preview-area {
+      width: 100%;
+      height: 200px;
+      background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    #img-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    #preview-msg { color: #999; font-size: 0.9rem; }
+
+    .file-label {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #e9ecef;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--main-blue);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-submit:active { background: #003d80; }
+
+    @media (max-width: 400px) {
+      .fab { right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-container">
+    <div class="blog-header">ギャラリー アップロード</div>
+    <div class="timeline">
+      {% if latest %}
+      <div class="blog-card">
+        <img src="{{ latest.image.url }}" class="post-image" alt="最新画像">
+        <div class="post-content">
+          <span class="post-date">登録日時: {{ latest.uploaded_at|date:"Y.m.d H:i" }}</span>
+        </div>
+      </div>
+      {% else %}
+      <p class="no-image-msg">まだ画像が登録されていません</p>
+      {% endif %}
+    </div>
+    <a href="javascript:void(0);" class="fab" onclick="toggleModal(true)">+</a>
+  </div>
+
+  <!-- モーダル -->
+  <div id="postModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>新規アップロード</span>
+        <span class="close" onclick="toggleModal(false)">×</span>
+      </div>
+      <div class="modal-body">
+        <div id="preview-area">
+          <img id="img-preview" alt="プレビュー">
+          <span id="preview-msg">写真を選択してください</span>
+        </div>
+        <form method="post" enctype="multipart/form-data" action="">
+          {% csrf_token %}
+          <label class="file-label" for="image-input">タップして画像を選択</label>
+          <input type="file" id="image-input" name="image" accept="image/*" required>
+          <button type="submit" class="btn-submit">登録する</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal(show) {
+      document.getElementById('postModal').style.display = show ? 'flex' : 'none';
+    }
+
+    document.getElementById('image-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('img-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('preview-msg').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>

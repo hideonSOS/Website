@@ -1,0 +1,164 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}チャット（キュ助） | アクアライブステーション{% endblock %}
+
+{% block extra_css %}
+<style>
+  .chat-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  .chat-container h2 {
+    margin-bottom: 1.5rem;
+  }
+  .chat-input-area {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .chat-input-area textarea {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 80px;
+  }
+  .chat-input-area button {
+    padding: 0.75rem 1.5rem;
+    background: #0066cc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    align-self: flex-end;
+  }
+  .chat-input-area button:disabled {
+    background: #999;
+    cursor: not-allowed;
+  }
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .message {
+    padding: 1rem;
+    border-radius: 6px;
+    line-height: 1.6;
+    color: #111;
+  }
+  .message.user {
+    background: #e8f0fe;
+    align-self: flex-end;
+    max-width: 85%;
+    margin-left: auto;
+  }
+  .message.assistant {
+    background: #f0f0f0;
+    align-self: flex-start;
+    max-width: 85%;
+  }
+  .message .label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    color: #333;
+  }
+  .spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.3em;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg {
+    color: #cc0000;
+    background: #fff0f0;
+    padding: 0.75rem;
+    border-radius: 4px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="chat-container">
+    <h2>キュ助 チャット</h2>
+
+    <div class="chat-input-area">
+      <textarea id="question" placeholder="質問を入力してください..."></textarea>
+      <button id="send-btn" onclick="sendQuestion()">送信</button>
+    </div>
+
+    <div class="chat-messages" id="messages"></div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const askUrl = "{% url 'chat:ask' %}";
+  const csrfToken = "{{ csrf_token }}";
+
+  function appendMessage(role, text) {
+    const container = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    const label = role === 'user' ? 'あなた' : 'キュ助';
+    div.innerHTML = `<div class="label">${label}</div><div>${text.replace(/\n/g, '<br>')}</div>`;
+    container.prepend(div);  // 新しいメッセージを上に
+  }
+
+  async function sendQuestion() {
+    const textarea = document.getElementById('question');
+    const btn = document.getElementById('send-btn');
+    const question = textarea.value.trim();
+    if (!question) return;
+
+    appendMessage('user', question);
+    textarea.value = '';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>回答中...';
+
+    try {
+      const res = await fetch(askUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        appendMessage('assistant', `<span class="error-msg">エラー: ${data.error}</span>`);
+      } else {
+        appendMessage('assistant', data.answer);
+      }
+    } catch (e) {
+      appendMessage('assistant', `<span class="error-msg">通信エラーが発生しました。</span>`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '送信';
+    }
+  }
+
+  // Enterキー（Shift+Enterで改行）
+  document.getElementById('question').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendQuestion();
+    }
+  });
+</script>
+{% endblock %}
