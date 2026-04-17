@@ -1,4 +1,5 @@
 import re
+import time
 from datetime import date, datetime
 from io import StringIO
 from pathlib import Path
@@ -12,6 +13,7 @@ from bs4 import BeautifulSoup
 # ============================================================
 TEST_MODE  = False
 TEST_DATE  = '20251012'   # テスト用：報知新聞社賞第61回ダイナミック敢闘旗 4日目
+TEST_DAY   = 1            # テスト用：節開催外の開発時に使用する日目（title.xlsx に該当節がない場合に適用）
 VENUE_CODE = '12'         # 住之江
 
 RANK_URL = 'https://www.boatrace-suminoe.jp/asp/htmlmade/suminoe/rank/rank.htm'
@@ -44,9 +46,51 @@ def get_today():
     return date.today().strftime('%Y%m%d')
 
 
-def _get_current_day():
-    """title.xlsx を参照し、今日が節の何日目かを返す。"""
+_day_cache: dict = {'value': None, 'expires': 0.0}
+
+
+def _scrape_current_day() -> int | None:
+    """
+    レース番組ページの日付ナビゲーション（ul.tab2_tabs）を参照し、
+    青背景（is-active2）の li の位置（1始まり）から今日が何日目かを返す。
+    結果は5分間キャッシュする。
+    """
+    now = time.time()
+    if _day_cache['value'] is not None and now < _day_cache['expires']:
+        return _day_cache['value']
+
+    http_headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+    }
+    try:
+        params = {'rno': 1, 'jcd': VENUE_CODE, 'hd': get_today()}
+        res = requests.get(RACELIST_URL, params=params, headers=http_headers, timeout=20)
+        res.raise_for_status()
+        res.encoding = 'utf-8'
+        soup = BeautifulSoup(res.text, 'html.parser')
+        nav  = soup.find('ul', class_='tab2_tabs')
+        if nav:
+            for i, li in enumerate(nav.find_all('li')):
+                if 'is-active2' in li.get('class', []):
+                    day = i + 1
+                    _day_cache['value']   = day
+                    _day_cache['expires'] = now + 300
+                    return day
+    except Exception as e:
+        print(f'[live_score] _scrape_current_day エラー: {e}')
+    return None
+
+
+def _get_current_day() -> int:
+    """
+    今日が節の何日目かを返す。優先順位：
+    1. title.xlsx（登録済み節）
+    2. レース番組ページのナビゲーション（スクレイピング）
+    3. TEST_DAY（フォールバック）
+    """
     today = datetime.strptime(get_today(), '%Y%m%d').date()
+
+    # 1. title.xlsx
     try:
         df = pd.read_excel(TITLE_XLSX_PATH, usecols=[1, 2], header=0)
         df.columns = ['start', 'end']
@@ -57,7 +101,15 @@ def _get_current_day():
                 return (today - row['start']).days + 1
     except Exception as e:
         print(f'[live_score] title.xlsx 読み込みエラー: {e}')
-    return 1
+
+    # 2. レース番組ページのナビゲーション
+    if not TEST_MODE:
+        day = _scrape_current_day()
+        if day is not None:
+            return day
+
+    # 3. フォールバック
+    return TEST_DAY
 
 
 # ============================================================
