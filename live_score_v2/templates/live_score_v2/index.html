@@ -1,0 +1,73 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}得点率計算ver.2{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'live_score_v2/css/index.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+<main class="score-v2-wrap">
+  <table class="score-v2-table">
+    <thead>
+      <tr>
+        <th>枠</th>
+        <th>選手名</th>
+        <th>得点率</th>
+        <th>順位</th>
+        <th>1着</th>
+        <th>2着</th>
+        <th>3着</th>
+        <th>4着</th>
+        <th>5着</th>
+        <th>6着</th>
+        <th>必要得点</th>
+        <th>次走</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for boat in "123456" %}
+      <tr>
+        <td>{{ boat }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        {% for _ in "123456" %}
+        <td class="sim-cell">
+          <div class="sim-upper"></div>
+          <div class="sim-lower"></div>
+        </td>
+        {% endfor %}
+        <td></td>
+        <td></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 変数設定エリア -->
+  <div class="control-area">
+    <div class="control-item">
+      <label for="raceNo">レース番号</label>
+      <select id="raceNo" class="race-select">
+        {% for r in "123456789"|make_list %}
+        <option value="{{ r }}">{{ r }}R</option>
+        {% endfor %}
+        <option value="10">10R</option>
+        <option value="11">11R</option>
+        <option value="12">12R</option>
+      </select>
+    </div>
+    <div class="control-item">
+      <label for="borderScore">ボーダー</label>
+      <input type="number" id="borderScore" class="border-input" step="0.01" min="0" value="6.00">
+    </div>
+    <button type="button" id="runBtn" class="run-btn">表示更新</button>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'live_score_v2/js/index.js' %}?v={% now 'U' %}"></script>
+{% endblock %}

@@ -10,6 +10,7 @@ urlpatterns = [
     path('website/', include('website.urls')),
     path('racer_page/', include('racer_page.urls')),
     path('live_score/', include('live_score.urls')),
+    path('live_score_v2/', include('live_score_v2.urls')),
     path('IntraNet/', include('IntraNet.urls')),
     path('TeikokuData/', include('TeikokuData.urls')),
     path('chat/', include('chat.urls')),
