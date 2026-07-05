@@ -60,6 +60,8 @@ h1 {
   padding: 6px 8px;
   font-size: 13px;
   color-scheme: dark;
+  box-sizing: border-box;
+  width: 120px;            /* 全ボックス共通の横幅 */
 }
 
 .date-filter .tilde {
@@ -75,9 +77,12 @@ h1 {
   background: #0f172a;
   color: #9ca3af;
   border: 1px solid #334155;
-  border-radius: 999px;
-  padding: 6px 14px;
+  border-radius: 8px;      /* daypickerと同じ角丸 */
+  padding: 6px 8px;        /* daypickerと同じサイズ（余白） */
   font-size: 13px;
+  line-height: 17px;       /* daypickerと高さを揃える */
+  box-sizing: border-box;  /* daypickerと同じ計算方式（幅を揃える） */
+  width: 120px;            /* 全ボックス共通の横幅 */
   cursor: pointer;
   transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }

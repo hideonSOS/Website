@@ -52,7 +52,7 @@ const API_BASE = "/website/api/machines";
     const partsOn = document.getElementById("btnParts")?.classList.contains("active");
     const otherOn = document.getElementById("btnOther")?.classList.contains("active");
     if(!partsOn && !otherOn){
-        output.textContent = "表示するデータの種類（部品交換／部品交換以外）を選択してください";
+        output.textContent = "表示するデータの種類（部品交換／コメント）を選択してください";
         return;
     }
     if(posts.length === 0){

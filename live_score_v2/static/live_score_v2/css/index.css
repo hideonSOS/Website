@@ -1,6 +1,49 @@
 /* ── レイアウト ── */
 .score-v2-wrap {
   padding: 16px;
+  position: relative;   /* 通信中オーバーレイの基準 */
+}
+
+/* ── 通信中オーバーレイ ── */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.72);   /* 半透明の膜でクリックを遮断 */
+  cursor: wait;
+}
+.loading-overlay[hidden] {
+  display: none;   /* hidden 属性でflexを確実に無効化 */
+}
+.loading-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 28px;
+  background: #0f172a;
+  border: 1px solid #38bdf8;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #38bdf8, 0 0 28px #0ea5e9;
+}
+.loading-text {
+  color: #93c5fd;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+.loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(56, 189, 248, 0.25);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: loading-spin 0.8s linear infinite;
+}
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
 }
 @media (max-width: 820px) {
   .score-v2-wrap {
@@ -13,14 +56,14 @@
   border-collapse: collapse;
   width: 100%;
   table-layout: fixed;
-  font-size: 13px;
+  font-size: 15.795px;   /* 17.55px→15.795px：さらに90%に縮小 */
 }
 .score-v2-table th,
 .score-v2-table td {
   border: 1px solid #333;
   padding: 4px 6px;
   text-align: center;
-  height: 32px;
+  height: 48px;      /* 本体行を1.5倍(32px→48px) */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -28,17 +71,20 @@
 .score-v2-table thead th {
   background: #0f172a;
   color: #93c5fd;
+  height: 22px;      /* ヘッダー行の高さを本体行(32px)の70%に */
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
-/* 列幅（タブレット横768pxに収まる設計・合計約754px） */
-.score-v2-table th:nth-child(1),  .score-v2-table td:nth-child(1)  { width: 28px;  } /* 枠 */
+/* 列幅（iPad横1024px主基準・フォント17.55px。合計約940pxで横スクロールなし） */
+.score-v2-table th:nth-child(1),  .score-v2-table td:nth-child(1)  { width: 26px;  } /* 枠（見切れない範囲で最小） */
 .score-v2-table th:nth-child(2),  .score-v2-table td:nth-child(2)  { width: 100px; } /* 選手名 */
-.score-v2-table th:nth-child(3),  .score-v2-table td:nth-child(3)  { width: 58px;  } /* 得点率 */
-.score-v2-table th:nth-child(4),  .score-v2-table td:nth-child(4)  { width: 36px;  } /* 順位 */
+.score-v2-table th:nth-child(3),  .score-v2-table td:nth-child(3)  { width: 62px;  } /* 得点率 */
+.score-v2-table th:nth-child(4),  .score-v2-table td:nth-child(4)  { width: 44px;  } /* 順位 */
 /* 1着〜6着（下段「無事故当確」が潰れない幅） */
 .score-v2-table th:nth-child(n+5):nth-child(-n+10),
-.score-v2-table td:nth-child(n+5):nth-child(-n+10)                 { width: 68px;  }
-.score-v2-table th:nth-child(11), .score-v2-table td:nth-child(11) { width: 60px;  } /* 必要得点 */
-.score-v2-table th:nth-child(12), .score-v2-table td:nth-child(12) { width: 44px;  } /* 2走情報 */
+.score-v2-table td:nth-child(n+5):nth-child(-n+10)                 { width: 78px;  }
+.score-v2-table th:nth-child(11), .score-v2-table td:nth-child(11) { width: 84px;  } /* 必要得点（ヘッダーが省略されない幅） */
+.score-v2-table th:nth-child(12), .score-v2-table td:nth-child(12) { width: 56px;  } /* 2走情報 */
 
 /* 1着〜6着セル：上下2段 */
 .score-v2-table td.sim-cell {
@@ -47,15 +93,15 @@
 }
 .sim-upper,
 .sim-lower {
-  height: 26px;
-  line-height: 26px;
+  height: 39px;      /* 26px→39px：本体行1.5倍に合わせる */
+  line-height: 39px;
   padding: 0 4px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .sim-lower {
   border-top: 1px solid #333;
-  font-size: 11px;
+  font-size: 13.365px;   /* 14.85px→13.365px：さらに90%に縮小 */
 }
 .sim-lower.sim-ok {
   color: #4ade80;

@@ -81,11 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const runBtn = document.getElementById('runBtn');
+  const overlay = document.getElementById('loadingOverlay');
   runBtn.addEventListener('click', async () => {
     runBtn.disabled = true;
+    overlay.hidden = false;   // 通信中オーバーレイ表示（操作を遮断）
     try {
       await loadRaceProgram();
     } finally {
+      overlay.hidden = true;  // 通信完了で解除
       runBtn.disabled = false;
     }
   });

@@ -65,6 +65,14 @@
     </div>
     <button type="button" id="runBtn" class="run-btn">表示更新</button>
   </div>
+
+  <!-- 通信中オーバーレイ（通信完了まで操作を遮断） -->
+  <div class="loading-overlay" id="loadingOverlay" hidden>
+    <div class="loading-box">
+      <span class="loading-spinner"></span>
+      <span class="loading-text">通信中… しばらくお待ちください</span>
+    </div>
+  </div>
 </main>
 {% endblock %}
 
