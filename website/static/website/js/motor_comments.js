@@ -261,12 +261,10 @@ function bindPostForm(){
     }
     try{
       await createPost(currentMachine, payload);
-      if(contentInput) contentInput.value = "";
-      if(racerInput) racerInput.value = "";
-      if(boatInput) boatInput.value = "";
-      if(partsInput) partsInput.value = "";
-      if(titleSelect) titleSelect.selectedIndex = 0; // 追加
-      await loadPostsIntoList(currentMachine);
+      // 投稿成功 → モーダルを閉じて、その号機の投稿一覧ページへ遷移
+      const dlg = document.getElementById("postsDialog");
+      if(dlg && dlg.open) dlg.close();
+      window.location.href = `/website/machines/${currentMachine}/`;
     }catch(e){
       // createPost でアラート済み
     }
