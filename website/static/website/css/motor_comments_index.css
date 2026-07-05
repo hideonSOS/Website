@@ -14,7 +14,7 @@
     
     .grid{
       display:grid;
-      width:min(1200px, 96vw);
+      width:96vw;   /* PCでも常に画面幅を活用（上限なし） */
       margin:24px auto;
       gap:var(--gap);
       grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));

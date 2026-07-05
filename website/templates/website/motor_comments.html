@@ -20,7 +20,10 @@
       <form id="postForm" class="postForm" novalidate>
         <div class="row">
           <label for="authorInput">投稿者</label>
-          <input type="text" id="authorInput" placeholder="投稿者・発言者を入力 ※ 例：松山秀夫 or 実際の使用選手のコメント等" autocomplete="name" />
+          <select id="authorInput">
+            <option value="スタッフ" selected>スタッフ</option>
+            <option value="他">他</option>
+          </select>
         </div>
         <div class="row">
           <div class="row">
@@ -38,8 +41,29 @@
           {% endfor %}
         </select>
         <div class="row">
+          <label for="boatInput">使用ボート</label>
+          <select id="boatInput">
+            <option value="">未選択</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="partsInput">部品交換</label>
+          <select id="partsInput">
+            <option value="">未選択</option>
+            <option value="クランクシャフト">クランクシャフト</option>
+            <option value="ピストン×１">ピストン×１</option>
+            <option value="ピストン×２">ピストン×２</option>
+            <option value="シリンダーケース">シリンダーケース</option>
+            <option value="キャブレター">キャブレター</option>
+            <option value="ギヤケース">ギヤケース</option>
+            <option value="キャリアボデー">キャリアボデー</option>
+            <option value="リング×１">リング×１</option>
+            <option value="リング×２">リング×２</option>
+          </select>
+        </div>
+        <div class="row">
           <label for="contentInput">コメント</label>
-          <textarea id="contentInput" placeholder="モーターに関する情報を入力" required></textarea>
+          <textarea id="contentInput" placeholder="モーターに関する情報を入力 ※ 部品交換を入力した場合は空欄可"></textarea>
         </div>
         <div class="row right">
           <button type="submit" id="submitPost">投稿</button>

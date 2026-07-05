@@ -1,24 +1,29 @@
 {% extends 'website/base.html' %}
 {% load static %}
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'website/css/motor_comments_detail.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/motor_comments_detail.css' %}?v={% now 'U' %}">
 {% endblock %}
 {% block content %}
-<div style='border:yellow 1px solid; padding:10px;'>
-  <h1>モーター投稿一覧</h1>
+<div class="detail-container">
+  <h1><span class="machine-no">{{ machine_no }}号機</span> モーター投稿一覧</h1>
   <div id="machine-data" data-machine-no="{{ machine_no }}"></div>
-  <!-- 号機を選ぶUI -->
-  <div class="controls">
-    <label for="machineSelect">モーターを選択：</label>
-    <select id="machineSelect"></select>
+
+  <div class="filter-bar">
+    <div class="date-filter">
+      <input type="date" id="startDate" aria-label="開始日" />
+      <span class="tilde">～</span>
+      <input type="date" id="endDate" aria-label="終了日" />
+    </div>
+    <div class="type-filter">
+      <button type="button" id="btnParts" class="toggle-btn active">部品交換</button>
+      <button type="button" id="btnOther" class="toggle-btn active">部品交換以外</button>
+    </div>
   </div>
 
-  <div id="output">モーターを選択してください</div>
+  <div id="output">読み込み中…</div>
 
-  </div>
+</div>
 {% endblock %}
 {% block extra_js %}
-<script src = '{% static "website/js/motor_comments_detail.js" %}'></script>
+<script src="{% static 'website/js/motor_comments_detail.js' %}?v={% now 'U' %}"></script>
 {% endblock %}
-</body>
-</html>

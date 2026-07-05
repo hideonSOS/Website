@@ -171,9 +171,17 @@ async function loadPostsIntoList(machineNo){
       const racer  = p.racer || "";  // ★追加
       const when = fmtDateTime(p.created_at);
       const sched = p.scheduled_at || "";
-      meta.textContent =(author ? `投稿者 ${author}`:"") +(racer ? ` ／ 使用選手 ${racer}` : "") +(sched ? ` ／ 投稿日 ${sched}` : "");
+      const boat  = p.boat_no || "";
+      meta.textContent =(author ? `投稿者 ${author}`:"") +(racer ? ` ／ 使用選手 ${racer}` : "") +(sched ? ` ／ 投稿日 ${sched}` : "") +(boat ? ` ／ 使用ボート ${boat}` : "");
       const content = document.createElement("div"); content.className = "content";
       content.textContent = p.content || "";
+      // 部品交換（入力があるときだけ表示）
+      let partsEl = null;
+      if(p.parts_exchange){
+        partsEl = document.createElement("div");
+        partsEl.className = "parts";
+        partsEl.textContent = `部品交換: ${p.parts_exchange}`;
+      }
       // ★削除ボタン
       const delBtn = document.createElement("button");
       delBtn.textContent = "削除";
@@ -186,12 +194,26 @@ async function loadPostsIntoList(machineNo){
         }catch(e){
           alert("削除に失敗しました");
         } });
-      card.appendChild(meta); card.appendChild(content);
+      card.appendChild(meta);
+      if(partsEl) card.appendChild(partsEl);
+      card.appendChild(content);
       card.appendChild(delBtn); // ★追加
       listEl.appendChild(card);
     }
   }catch(e){
     statusEl.textContent = "読み込みに失敗しました";
+  }
+}
+
+// ====== 使用ボートの選択肢（1〜100）を生成 ======
+function populateBoatOptions(){
+  const sel = document.getElementById("boatInput");
+  if(!sel || sel.options.length > 1) return; // 生成済みなら何もしない
+  for(let i = 1; i <= 100; i++){
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = String(i);
+    sel.appendChild(opt);
   }
 }
 
@@ -202,6 +224,8 @@ function bindPostForm(){
   const racerInput = document.getElementById("titleInput");
   const contentInput = document.getElementById("contentInput");
   const dateInput = document.getElementById("dateInput");
+  const boatInput = document.getElementById("boatInput");
+  const partsInput = document.getElementById("partsInput");
   if(!form) return;
 
   form.onsubmit = async (e)=>{
@@ -218,12 +242,20 @@ function bindPostForm(){
     const payload = {
       title: selectedTitleText,   // DB保存用にテキストを渡す
       author: (authorInput?.value || "").trim() || "匿名",
-      racer: (racerInput?.value || "").trim(), 
+      racer: (racerInput?.value || "").trim(),
       content: (contentInput?.value || "").trim(),
-      scheduled_at: (dateInput?.value) ? dateInput.value : null
+      scheduled_at: (dateInput?.value) ? dateInput.value : null,
+      boat_no: (boatInput?.value || "").trim(),
+      parts_exchange: (partsInput?.value || "").trim()
     };
-    if(!payload.content){
-      alert("本文を入力してください");
+    if(payload.boat_no && !/^\d{1,3}$/.test(payload.boat_no)){
+      alert("使用ボートは3桁までの数字で入力してください");
+      boatInput?.focus();
+      return;
+    }
+    // 部品交換の入力があれば本文は空欄でも投稿できる
+    if(!payload.content && !payload.parts_exchange){
+      alert("本文を入力してください（部品交換を入力した場合は空欄可）");
       contentInput?.focus();
       return;
     }
@@ -231,6 +263,8 @@ function bindPostForm(){
       await createPost(currentMachine, payload);
       if(contentInput) contentInput.value = "";
       if(racerInput) racerInput.value = "";
+      if(boatInput) boatInput.value = "";
+      if(partsInput) partsInput.value = "";
       if(titleSelect) titleSelect.selectedIndex = 0; // 追加
       await loadPostsIntoList(currentMachine);
     }catch(e){
@@ -284,7 +318,10 @@ async function openPosts(machineNo){
     }
   });
   assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
-  
+
+  // 使用ボートの選択肢を生成
+  populateBoatOptions();
+
   // グリッドを生成
   await generateGrid();
 })();

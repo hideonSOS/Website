@@ -8,6 +8,14 @@ body {
     /*margin: 20px;*/
 }
 
+/* 絞り込みバー */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;            /* ラベルとドロップダウンの左右間隔 */
+    margin: 24px 0 20px;  /* 上部に余白 */
+}
+
 /* セレクトボックス */
 select {
     background-color: #111;   /* 濃い黒に近い色 */

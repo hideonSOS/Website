@@ -6,10 +6,12 @@ class MotorComment(models.Model):
     machine_no  = models.PositiveIntegerField(db_index=True)   # 号機番号
     author      = models.CharField(max_length=50, blank=True, default="匿名")
     racer = models.CharField(max_length=10, null=True, blank=True)
-    content     = models.TextField()                           # 本文（必須）
+    content     = models.TextField(blank=True)                 # 本文（部品交換入力時は空欄可）
     scheduled_at= models.DateField(null=True, blank=True)      # 入力された日程（任意）
     created_at  = models.DateTimeField(auto_now_add=True)      # 生成日時
     title = models.CharField(max_length=30, null=True, blank=True)
+    boat_no = models.CharField(max_length=3, null=True, blank=True)          # 使用ボート（数字3桁まで）
+    parts_exchange = models.CharField(max_length=100, null=True, blank=True) # 部品交換（例: ピストンリング×2個）
     class Meta:
         ordering = ["-created_at"]
 

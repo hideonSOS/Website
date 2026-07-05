@@ -5,14 +5,16 @@
 {% endblock %}
 {% block content %}
     
-    <label for="titleFilter">開催タイトルで絞り込み:</label>
-    <select id="titleFilter">
-    <option value="">すべて表示</option>
+    <div class="filter-bar">
+      <label for="titleFilter">開催タイトルで絞り込み:</label>
+      <select id="titleFilter">
+      <option value="">すべて表示</option>
 
-    {% for t in liston %}
-    <option value="{{ t.title }}">{{ t.title }}</option>
-    {% endfor %}
-    </select>
+      {% for t in liston %}
+      <option value="{{ t.title }}">{{ t.title }}</option>
+      {% endfor %}
+      </select>
+    </div>
 
     <ul id="postList">
     {% for list in liston %}

@@ -43,6 +43,8 @@ class MotorCommentListCreateAPI(View):
                 "scheduled_at": c.scheduled_at.isoformat() if c.scheduled_at else None,
                 "created_at": c.created_at.isoformat(),
                 "title": c.title or "",
+                "boat_no": c.boat_no or "",
+                "parts_exchange": c.parts_exchange or "",
             }
             for c in qs
         ]
@@ -55,15 +57,22 @@ class MotorCommentListCreateAPI(View):
             return HttpResponseBadRequest("invalid json")
 
         content = (payload.get("content") or "").strip()
-        if not content:
+        parts_exchange = (payload.get("parts_exchange") or "").strip()
+        # 部品交換の入力があれば本文は空欄でもよい
+        if not content and not parts_exchange:
             return HttpResponseBadRequest("content is required")
+
+        boat_no = (str(payload.get("boat_no") or "")).strip()
+        if boat_no and not (boat_no.isdigit() and len(boat_no) <= 3):
+            return HttpResponseBadRequest("boat_no must be a number of up to 3 digits")
 
         author = (payload.get("author") or "匿名").strip() or "匿名"
         racer = (payload.get("racer") or "").strip()
         scheduled = payload.get("scheduled_at")
         title = (payload.get("title") or "").strip()
 
-        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer, title=title)
+        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer, title=title,
+                           boat_no=boat_no, parts_exchange=parts_exchange)
         if scheduled:
             try:
                 obj.scheduled_at = date.fromisoformat(scheduled)
@@ -79,6 +88,8 @@ class MotorCommentListCreateAPI(View):
             "scheduled_at": obj.scheduled_at.isoformat() if obj.scheduled_at else None,
             "created_at": obj.created_at.isoformat(),
             "title": obj.title,
+            "boat_no": obj.boat_no or "",
+            "parts_exchange": obj.parts_exchange or "",
         }, status=201)
 
 

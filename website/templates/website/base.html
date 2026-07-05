@@ -11,18 +11,17 @@
   <body>
     <!-- ヘッダー -->
     <header>
-      <h1>アクアライブステーション（業務アプリ）</h1>
       <button class="ham-btn" id="js-btn">
         <span></span><span></span><span></span>
       </button>
       <!-- ナビゲーション -->
       <nav class="ham-nav" id="js-nav">
         <ul>
-          <li><a href="{% url 'website:calendar' %}">出演者情報</a></li>
-          <li><a href="{% url 'website:motor_comments_total' %}">一覧（モーター情報）</a></li>
-          <li><a href="{% url 'website:motor_comments_index' %}">モーター別情報</a></li>
-          <li><a href="{% url 'website:motor_comments' %}">入力（モーター情報）</a></li>
           <li><a href="{% url 'live_score_v2:index' %}">得点率計算ver.2</a></li>
+          <li><a href="{% url 'website:motor_comments_index' %}">モーター別情報（出力）</a></li>
+          <li><a href="{% url 'website:motor_comments' %}">モーター別情報（入力）</a></li>
+          <li><a href="{% url 'website:motor_comments_total' %}">一覧（モーター情報）</a></li>
+          <li><a href="{% url 'website:calendar' %}">出演者情報</a></li>
           {% comment %} 使用しない機能のため一旦非表示（2026-07-04）
           <li><a href="{% url 'racer_page:racer_input' %}">出場選手表示</a></li>
           <li><a href="{% url 'live_score:index' %}">得点率ライブ</a></li>
