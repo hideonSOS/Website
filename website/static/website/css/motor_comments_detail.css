@@ -121,10 +121,17 @@ h1 {
   overflow-wrap: break-word;
 }
 
-/* 部品交換（メイン部品）は黄色・太字で目立たせる */
-.parts {
+/* 部品交換（メイン部品）は黄色・太字・少し大きめで目立たせる */
+.post-card .parts {
   color: #facc15;
   font-weight: 700;
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+  padding: 3px 0;      /* 上下に少しだけ余白 */
+}
+@media (min-width: 768px) {
+  .post-card .parts {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
 }
 
 /* 操作ボタン（削除など） */
