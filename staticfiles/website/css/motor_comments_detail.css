@@ -1,0 +1,209 @@
+/* =========================================
+   モーター詳細ページ
+   モバイルファースト＋3ブレークポイント
+   - ベース      : iPhone（〜767px）
+   - min 768px  : iPad
+   - min 1024px : PC
+   ========================================= */
+
+/* ---------- ベース（iPhone） ---------- */
+.detail-container {
+  padding: 10px;
+  margin: 0;
+}
+
+/* スマホ: ヘッダー領域をなくしてハンバーガーだけ残し、
+   「○号機」見出しを画面最上部に配置する */
+@media (max-width: 768px) {
+  header {
+    height: 0;
+    padding: 0;
+    border: none;
+  }
+  .detail-container {
+    padding-top: 14px;
+  }
+  .detail-container h1 {
+    margin: 0 60px 16px 0; /* 右はハンバーガーボタンと重ならない余白 */
+  }
+}
+
+h1 {
+  font-size: 11px;
+  margin: 0 0 20px;
+}
+
+.machine-no {
+  color: #eafb02;
+}
+
+/* ---------- 絞り込みバー ---------- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-filter input[type="date"] {
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  color-scheme: dark;
+  box-sizing: border-box;
+  width: 120px;            /* 全ボックス共通の横幅 */
+}
+
+.date-filter .tilde {
+  color: #93c5fd;
+}
+
+.type-filter {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-btn {
+  background: #0f172a;
+  color: #9ca3af;
+  border: 1px solid #334155;
+  border-radius: 8px;      /* daypickerと同じ角丸 */
+  padding: 6px 8px;        /* daypickerと同じサイズ（余白） */
+  font-size: 13px;
+  line-height: 17px;       /* daypickerと高さを揃える */
+  box-sizing: border-box;  /* daypickerと同じ計算方式（幅を揃える） */
+  width: 120px;            /* 全ボックス共通の横幅 */
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.toggle-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-color: #3b82f6;
+  font-weight: 700;
+}
+
+.post-list {
+  display: grid;
+  grid-template-columns: 1fr;   /* 全デバイス共通: 1列（横幅いっぱい） */
+  gap: 12px;
+}
+
+.post-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+/* カード内の各行は色・サイズを統一 */
+.meta,
+.title,
+.parts,
+.content {
+  font-size: 11px;  /* h1（モーター投稿一覧）と同じサイズ */
+  color: #fff;
+  line-height: 1.6;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 部品交換（メイン部品）は黄色・太字・少し大きめで目立たせる */
+.post-card .parts {
+  color: #facc15;
+  font-weight: 700;
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+  padding: 3px 0;      /* 上下に少しだけ余白 */
+}
+@media (min-width: 768px) {
+  .post-card .parts {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
+}
+
+/* 操作ボタン（削除など） */
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.post-del-btn {
+  background: #0f172a;
+  color: #f87171;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.post-del-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.post-del-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- iPad（768px〜） ---------- */
+@media (min-width: 768px) {
+  .detail-container {
+    padding: 14px;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 13px;
+  }
+
+  .post-list {
+    gap: 16px;
+  }
+
+  .meta,
+  .title,
+  .parts,
+  .content {
+    font-size: 13px;  /* h1と同じサイズ */
+  }
+}
+
+/* ---------- PC（1024px〜） ---------- */
+@media (min-width: 1024px) {
+  .detail-container {
+    margin: 0;           /* 画面幅いっぱいに使う */
+    padding: 14px;       /* タブレットと同じ余白 */
+  }
+
+  h1 {
+    font-size: 13px;      /* タブレットと同じサイズに統一 */
+    margin-bottom: 20px;  /* タブレットと同じ余白 */
+  }
+
+  /* カード間隔・カード内余白はタブレットと共通のためPC専用の指定なし */
+
+  .meta,
+  .title,
+  .parts,
+  .content {
+    font-size: 13px;  /* h1と同じサイズ（タブレットと共通） */
+  }
+}

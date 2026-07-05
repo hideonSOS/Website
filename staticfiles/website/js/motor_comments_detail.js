@@ -82,9 +82,8 @@ const API_BASE = "/website/api/machines";
         return;
     }
 
-    // 古い順（上）→新しい順（下）で時系列に流す
     const sorted = posts.slice().sort((a, b) =>
-        new Date(a.created_at) - new Date(b.created_at)
+        new Date(b.created_at) - new Date(a.created_at)
     );
 
     const list = document.createElement("div");

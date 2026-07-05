@@ -1,0 +1,72 @@
+body {
+      background: black;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .item {
+      aspect-ratio: 16 / 9;
+      border: 2px solid blue;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .item img:hover {
+      transform: scale(1.05);
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* モーダル */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal img {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover; /* contain → cover に変更 */
+      display: block;
+    }
+
+    .modal.active {
+      display: flex;
+    }

@@ -230,8 +230,7 @@ async function loadPostsIntoList(machineNo){
     const posts = await fetchPosts(machineNo);
     if(!posts || posts.length === 0){ statusEl.textContent = "投稿はありません"; return; }
     statusEl.textContent = "";
-    // 古い順（上）→新しい順（下）で時系列に流す
-    const sorted = posts.slice().sort((a,b)=> new Date(a.created_at||0) - new Date(b.created_at||0));
+    const sorted = posts.slice().sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0));
     for(const p of sorted){
       const card = document.createElement("div"); card.className = "postCard";
       const meta = document.createElement("div"); meta.className = "meta";
@@ -241,13 +240,8 @@ async function loadPostsIntoList(machineNo){
       const sched = p.scheduled_at || "";
       const boat  = p.boat_no || "";
       meta.textContent =(author ? `投稿者 ${author}`:"") +(racer ? ` ／ 使用選手 ${racer}` : "") +(sched ? ` ／ 投稿日 ${sched}` : "") +(boat ? ` ／ 使用ボート ${boat}` : "");
-      // コメント（入力があるときだけ表示。空なら領域ごと非表示）
-      let contentEl = null;
-      if(p.content){
-        contentEl = document.createElement("div");
-        contentEl.className = "content";
-        contentEl.textContent = p.content;
-      }
+      const content = document.createElement("div"); content.className = "content";
+      content.textContent = p.content || "";
       // 部品交換（入力があるときだけ表示）
       let partsEl = null;
       if(p.parts_exchange){
@@ -277,7 +271,7 @@ async function loadPostsIntoList(machineNo){
         } });
       card.appendChild(meta);
       if(partsEl) card.appendChild(partsEl);
-      if(contentEl) card.appendChild(contentEl);
+      card.appendChild(content);
       card.appendChild(editBtn); // ★追加
       card.appendChild(delBtn);  // ★追加
       listEl.appendChild(card);

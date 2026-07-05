@@ -1,0 +1,350 @@
+:root{
+      --bg: #000;          /* 背景（黒） */
+      --fg: #e5e7eb;       /* 文字色（明灰） */
+      --muted:lightgrey;    /* 補助文字 */
+      --accent: #22d3ee;   /* アクセント（シアン） */
+      --grid: #929292;     /* グリッド線 */
+      --cell: #0b0b0b;     /* セル背景 */
+      --cell-hover: #111827; /* セルhover */
+      --other-month: #0a0a0a; /* 前後月セル */
+      --sun: orange;      /* 日曜 */
+      --sat: cyan;      /* 土曜 */
+    }
+    html, body { height: 100%; }
+
+    .container{ max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+    /* ヘッダー */
+    .header{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:12px; }
+    .left, .right{ display:flex; align-items:center; gap:8px; }
+    .brand{ font-size:18px; color:var(--muted); letter-spacing:.04em; }
+    .monthLabel{ font-size:28px; font-weight:700; letter-spacing:.02em; }
+    .badge{ 
+      font-size:12px; 
+      padding:2px 8px; 
+      color:#555;
+      border: none;           /* ボーダーを明示的に削除 */
+      background: transparent; /* 背景も透明に */
+      outline: none;          /* アウトラインも削除 */
+}
+
+    button{ cursor:pointer; border:none; border-radius:12px; background:#0f172a; color:var(--fg); padding:10px 14px; font-weight:600; }
+    button:hover{ background:#111827; }
+    .iconbtn{ width:42px; height:42px; display:grid; place-items:center; border-radius:12px; }
+
+    /* 曜日ヘッダ */
+    .weekday{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top:10px; 
+    position: sticky;   /* ← 固定する */
+    top: 56px;          /* ← ヘッダーの高さ分ずらす */
+    background:#000;    /* ← 背景色をつけないと透ける */
+    z-index: 90;        /* ← ヘッダーより少し下に */}
+    .weekday div{ text-align:center; padding:10px 0; font-size:13px; color:white; border-bottom:1px solid var(--grid); }
+    .weekday .sun{ color:var(--sun); }
+    .weekday .sat{ color:var(--sat); }
+    #modeBadge {
+    outline: none;        /* フォーカス枠を消す */
+    border: none;         /* 枠線を完全に消す */
+    background: none;  
+}
+button,
+a.btn-link {
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+    /* カレンダー本体 */
+    .grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top:8px; }
+    .day{
+      position:relative; min-height:220px; background:var(--cell); border:1px solid var(--grid); border-radius:12px; padding:8px; overflow:hidden;
+      transition: background .15s ease;
+      
+    }
+    .day:hover{ background:var(--cell-hover); }
+    .day.other{ 
+      background:var(--other-month); opacity:.7; }
+    .num{
+      position:absolute; top:8px; right:10px; font-size:12px; color:var(--muted); font-weight:normal;
+    }
+    .today{ outline:2px solid var(--accent); outline-offset:-2px; }
+
+    .events{ margin-top:22px; display:flex; flex-direction:column; gap:6px; }
+    .pill{ display:inline-flex; align-items:center; gap:8px; font-size:12px; background:#0d3b45; border:1px solid #134e5a; padding:6px 8px; border-radius:6px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; border:solid orange 1px;}
+    .pill .time{ color:#a7f3d0; font-weight:700; }
+
+    /* フッタの説明 */
+    .help{ margin-top:14px; color:var(--muted); font-size:12px; }
+
+    /* モーダル（<dialog>） */
+    dialog{ border:none; border-radius:16px; padding:0; width:min(560px, 92vw); background:#0b1220; color:var(--fg); box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    dialog::backdrop{ background:rgba(0,0,0,.6); }
+    .modalHead{ display:flex; align-items:center; gap:10px; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--grid); }
+    .modalTitle{ font-weight:700; }
+    .modalBody{ padding:18px; display:grid; gap:14px; }
+    .row{ display:grid; gap:6px; }
+    label{ font-size:12px; color:var(--muted); }
+    input[type="text"], input[type="time"], input[type="date"], textarea{ background:#0f172a; color:var(--fg); border:1px solid var(--grid); border-radius:10px; padding:10px 12px; outline:none; color-scheme: dark; }
+    textarea{ min-height:80px; resize:vertical; }
+    .modalFoot{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-top:1px solid var(--grid); }
+    .danger{ background:#3f1d1d; }
+    .danger:hover{ background:#4a2323; }
+
+    .listEmpty{ color:var(--muted); font-size:12px; }
+    .eventList{ display:flex; flex-direction:column; gap:8px; }
+    .eventItem{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--grid); background:#0f172a; padding:8px 10px; border-radius:10px; }
+    .eventItem .meta{ display:flex; gap:8px; font-size:12px; color:var(--muted); }
+    /* 3レーン（MC/解説者1/解説者2）用 */
+    .lanes{ display:grid; grid-template-rows: repeat(4, 1fr); gap:6px; margin-top:24px; }
+    .lane{ display:flex; flex-direction:column; gap:6px; border:1px dashed var(--grid); border-radius:10px; padding:6px; }
+    .laneTitle{ font-size:11px; color:var(--muted); letter-spacing:.02em; }
+    .laneBody{ display:flex; flex-direction:column; gap:6px; }
+  /* 開催日色分け */
+    /* 開催日色分け */
+  .day.none { background:#0a0a0a; border:2px dashed #555; } /* 非開催=グレー */
+
+  .day.toshi { background:#0b1e2e; border:2px solid #1975ee; } /* 都市開催=青 */
+  .day.minou { background:#0b1e2e; border:2px solid #27ee19; } /* 箕面開催=緑 */
+
+    
+    .raceTag{ position:absolute; top:8px; right:2px; font-size:11px; padding:2px 6px; border-radius:8px; background:#102846; border:1px solid #1e3a5f; color:#93c5fd; }
+  /* 入力ピッカーのアイコンを明るい青に */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator{
+      filter: invert(78%) sepia(24%) saturate(1000%) hue-rotate(145deg) brightness(110%) contrast(100%);
+      cursor:pointer;
+    }
+    input[type="checkbox"]{ accent-color: var(--accent); }
+  /* メモ表示 */
+    .memo{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .noteIcon{ font-size:12px; opacity:.9; }
+.num {
+  /* 位置リセット */
+  position: static; 
+  right: auto;
+  left: 8px;
+  margin-bottom: 8px;
+  z-index: 10;
+  
+  /* ★ここが重要：Flexboxで「下揃え」にする */
+  display: flex;
+  align-items: baseline; /* 数字と曜日を下のラインで揃える */
+  gap: 4px;              /* 数字と曜日の間の余白 */
+
+  /* 数字本体のサイズ */
+  font-size: 2.0rem;     /* 数字を大きく */
+  font-weight: 800;      /* 太く */
+  line-height: 1;
+  color: #00e5ff;
+}
+
+/* 2. 曜日の設定 */
+.wk-label {
+  /* フォントサイズ設定 */
+  font-size: 12px;       /* ★0.2remは小さすぎるため、10px〜12px推奨 */
+  font-weight: normal;   /* 太字にしない */
+  color: #aaa;           /* 色を薄く */
+  
+  /* 不要なマージン削除（gapで制御するため） */
+  margin-left: 0; 
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: #000;  /* 背景を指定しないと下の要素が透ける */
+  z-index: 100;      /* 前面に出す */
+}
+.btn-link {
+    display: inline-block;
+    padding: 5px 16px;
+    background: #0f172a;   /* ボタン背景色 */
+    color: #e5e7eb;       /* 文字色 */
+    border: 1px solid #334155;
+    border-radius: 10px;
+    text-decoration: none; /* aタグの下線を消す */
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn-link:hover {
+    background: #111827; /* hover時の色 */
+  }
+  .monthLabel {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+/* 都市開催（青） */
+.day.toshi .raceTag {
+  color: #1975ee;        /* フォントを枠色と同じに */
+  border-color: #1975ee; /* 枠も合わせるなら */
+}
+
+/* 箕面開催（緑） */
+.day.minou .raceTag {
+  color: #27ee19;
+  border-color: #27ee19;
+}
+
+/* 非開催（グレー） */
+.day.none .raceTag {
+  color: #555;
+  border-color: #555;
+}
+
+  
+
+/* === スマホ向けレスポンシブ設定 === */
+@media (max-width: 768px) {
+/* ▼▼▼ ここが修正の核心です ▼▼▼ */
+
+  /* 1. 日付を「左上」に確保する */
+  /* 元々右(right)にあった指定を解除して、左(left)に固定します */
+  .num {
+    right: auto;      /* 右寄せを解除 */
+    left: 8px;        /* 左端から8pxの位置へ */
+    text-align: left; /* 文字も左揃え */
+    z-index: 10;      /* タグより手前に表示 */
+  }
+
+  /* 2. 開催タグを「右上」に移動する（左上の混雑解消） */
+  /* 元々左(left)にあった指定を解除して、右(right)に移動します */
+  .raceTag {
+    left: auto;        /* 左寄せを解除（これが重要） */
+    right: 8px;        /* 右端から8pxの位置へ（日付と対角の場所） */
+    text-align: right; /* 文字を右揃え */
+    
+    /* 長すぎるタグが左の日付にぶつからないよう幅を制限 */
+    max-width: 65%;    
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* ▲▲▲ 修正ここまで ▲▲▲ */
+  /* 1. 曜日ヘッダー（月〜日）を隠す */
+  /* 縦並びになるので、上のヘッダーは不要になります */
+  .weekday {
+    display: none;
+  }
+
+  /* 2. グリッドを解除して縦積みにする */
+  .grid {
+    display: flex;         /* GridからFlexに変更 */
+    flex-direction: column; /* 縦方向に並べる */
+    gap: 12px;             /* 日付ごとの間隔 */
+  }
+
+  /* 3. 日付セルのスタイル変更 */
+  .day {
+    min-height: auto;      /* 高さを固定しない（中身に合わせる） */
+    height: auto;
+  }
+
+  /* 4. 予定がない日を非表示にする（今回の要望） */
+  .day.empty-day {
+    display: none;
+  }
+
+  /* 5. 日付と曜日の見た目調整 */
+  .num {
+    position: static;      /* 絶対配置をやめる */
+    font-size: 1.5rem;       /* 少し大きく */
+      /* 下に隙間 */
+    display: inline-block;
+  }
+  
+  /* 曜日の色調整 */
+  .wk-label { font-size: 1.2rem; margin-left: 4px; color: #aaa; font-weight: normal;}
+  
+  /* 日曜・土曜の色付け（JSで特定クラスをつけるか、nth-childが使えないのでJS推奨だが、簡易的に） */
+  /* 必要であればJS側で .day に .sun .sat クラスを追加するとより丁寧です */
+  
+  /* 6. 「今日」だけは予定がなくても表示したい場合（任意） */
+/* 1. カード本体：背景は透明にして、枠線も消す */
+.day.today {
+  display: block !important;
+  position: relative;
+  
+  /* ▼重要：本体の背景は透明にする（後ろの ::after の黒色を見せるため） */
+  background: transparent !important; 
+  
+  border: none !important; /* 既存のボーダーを強制削除 */
+  border-radius: 12px;
+  z-index: 1;         /* 重なり順の基準 */
+  overflow: visible;  /* 光のはみ出しを許可 */
+}
+
+/* 2. 一番奥：光る虹色の枠（グラデーション） */
+.day.today::before {
+  content: "";
+  position: absolute;
+  
+  /* 枠の太さ分だけマイナスにする */
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  
+  z-index: -2; /* ★一番後ろ */
+  
+  border-radius: 12px;
+  background: linear-gradient(45deg, blue, red, orange, blue);
+  background-size: 300% 300%;
+  animation: gradient-border-move 3s ease infinite;
+}
+
+/* 3. 真ん中：黒い背景（中身を塗りつぶすマスク） */
+.day.today::after {
+  content: "";
+  position: absolute;
+  
+  /* カード本体と同じサイズにする */
+  top: 0; left: 0; right: 0; bottom: 0;
+  
+  z-index: -1; /* ★虹色より手前、文字より奥 */
+  
+  border-radius: 12px;
+  background: #0b0b0b; /* ここで「カードの背景色」を指定 */
+}
+.lanes{margin-top:5px; }
+/* アニメーション定義（変更なし） */
+@keyframes gradient-border-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+  .day.other {
+    display: none !important;
+  }
+  /* ▼▼▼ 追加：スマホでレーンを横並びにする設定 ▼▼▼ */
+
+  /* 1. レーン（枠）自体の向きを横並びにする */
+  .lane {
+    flex-direction: row;      /* 縦積み(column)から横並び(row)へ変更 */
+    align-items: center ;  /* 上揃え（centerにすると中央揃え） */
+    gap: 3px;     
+    padding:  0px;           /* タイトルと中身の間の余白 */
+    letter-spacing:   0.3rem;
+  }
+
+  /* 2. タイトル（MC、解説者など）の幅を確保する */
+  .laneTitle {
+    /* 固定幅、または最小幅を指定してラベルっぽくする */
+    min-width: 120px;          
+    /*font-weight: bold;*/
+    /* 位置の微調整（中身のpillと高さを合わせるため少し下げるなど） */
+    padding-top: 0px; 
+    text-align: center;  
+    align-items:center;
+    margin-top:0px;
+    font-size: 1.2rem;
+    letter-spacing:   0.1rem;
+  }
+
+  /* 3. 中身（pillが入っている部分）が残りの幅を使うようにする */
+  .laneBody {
+    flex: 1;                  /* 横幅いっぱいまで広げる */
+    
+    /* ↓もし中身のピルも「縦積み」ではなく「横に流したい」場合は以下も有効にしてください */
+    /* flex-direction: row; */
+    /* flex-wrap: wrap; */
+  }
+  .pill{font-size:1.2rem;}
+}

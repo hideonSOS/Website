@@ -1,0 +1,105 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2d2d2d;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            padding-top: 30px;
+        }
+
+        .container {
+            width: 90vw;
+            max-width: 1600px;
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 12px;
+            padding: 30px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #e0e0e0;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+        }
+
+        .player-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .boat-number {
+            color: #bbb;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .player-card {
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid #4a4a4a;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border-color: #5a5a5a;
+        }
+
+        .player-photo {
+            width: 160px;
+            height: 210px;
+            background-color: #505050;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 14px;
+            overflow: hidden;
+            border: 3px solid #4a4a4a;
+        }
+
+        .player-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-name {
+            color: #e0e0e0;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .player-number {
+            color: #999;
+            font-size: 0.9em;
+            font-size: 2em;
+        }
