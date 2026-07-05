@@ -81,5 +81,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'website/js/motor_comments.js' %}"></script>
+<script src="{% static 'website/js/motor_comments.js' %}?v={% now 'U' %}"></script>
 {% endblock %}

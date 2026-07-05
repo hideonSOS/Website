@@ -16,9 +16,14 @@ from .serializers import RaceDaySerializer, EventSerializer
 class Motor_Comments(TemplateView):
     template_name = "website/motor_comments.html"
 
+    # 常に選択肢の先頭に出す固定タイトル
+    FIRST_TITLE = "ボートの時間ご視聴ありがとう競走"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["titles"] = list(Title.objects.values_list("title", flat=True))
+        titles = list(Title.objects.values_list("title", flat=True))
+        # 固定タイトルを先頭に。DB側に同名があっても重複させない
+        context["titles"] = [self.FIRST_TITLE] + [t for t in titles if t != self.FIRST_TITLE]
         return context
 
 
