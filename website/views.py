@@ -117,6 +117,7 @@ class MotorCommentDetailAPI(View):
         return HttpResponseNotAllowed(["DELETE"])
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class MotorCommentDetailView(TemplateView):
     template_name = "website/motor_comments_detail.html"
 

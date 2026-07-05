@@ -121,6 +121,41 @@ h1 {
   overflow-wrap: break-word;
 }
 
+/* 部品交換（メイン部品）は黄色・太字で目立たせる */
+.parts {
+  color: #facc15;
+  font-weight: 700;
+}
+
+/* 操作ボタン（削除など） */
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.post-del-btn {
+  background: #0f172a;
+  color: #f87171;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.post-del-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.post-del-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ---------- iPad（768px〜） ---------- */
 @media (min-width: 768px) {
   .detail-container {
