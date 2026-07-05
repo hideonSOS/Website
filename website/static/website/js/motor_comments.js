@@ -92,6 +92,7 @@ async function generateGrid(){
 
 // ====== 投稿一覧（表示/取得/作成） ======
 let currentMachine = null;
+let editingPostId = null;   // 修正中の投稿ID（nullなら新規投稿）
 
 async function fetchPosts(machineNo){
   try{
@@ -154,6 +155,72 @@ async function createPost(machineNo, payload){
   }
 }
 
+async function updatePost(machineNo, postId, payload){
+  const headers = {
+    "Content-Type": "application/json",
+    "X-CSRFToken": getCSRFToken(),
+    "X-Requested-With": "XMLHttpRequest"
+  };
+  // まず PUT、弾かれる環境向けに POST /update をフォールバック
+  let res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}`, {
+    method:"PUT", headers, body: JSON.stringify(payload), credentials:"same-origin",
+  });
+  if(res.status !== 200){
+    res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}/update`, {
+      method:"POST", headers, body: JSON.stringify(payload), credentials:"same-origin",
+    });
+  }
+  if(res.status === 200){ return await res.json(); }
+  const msg = await res.text().catch(()=> "");
+  alert(`更新に失敗しました（${res.status}）\n${msg || "サーバーからの応答なし"}`);
+  throw new Error(`Update failed ${res.status}`);
+}
+
+// 修正ボタン: 投稿内容をフォームに読み込み、更新モードへ
+function enterEditMode(p){
+  editingPostId = p.id;
+  const authorInput  = document.getElementById("authorInput");
+  const racerInput   = document.getElementById("titleInput");
+  const dateInput    = document.getElementById("dateInput");
+  const boatInput    = document.getElementById("boatInput");
+  const partsInput   = document.getElementById("partsInput");
+  const contentInput = document.getElementById("contentInput");
+  const titleSel     = document.getElementById("titleSelect");
+  if(authorInput)  authorInput.value  = p.author || "スタッフ";
+  if(racerInput)   racerInput.value   = p.racer || "";
+  if(dateInput)    dateInput.value    = p.scheduled_at || "";
+  if(titleSel)     titleSel.value     = p.title || "";
+  if(boatInput)    boatInput.value    = p.boat_no || "";
+  if(partsInput)   partsInput.value   = p.parts_exchange || "";
+  if(contentInput) contentInput.value = p.content || "";
+
+  const submitBtn = document.getElementById("submitPost");
+  if(submitBtn) submitBtn.textContent = "更新";
+  const cancelBtn = document.getElementById("cancelEdit");
+  if(cancelBtn) cancelBtn.hidden = false;
+  document.getElementById("postForm")?.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+// 更新モードを解除して新規投稿モードへ戻す
+function exitEditMode(){
+  editingPostId = null;
+  const racerInput   = document.getElementById("titleInput");
+  const boatInput    = document.getElementById("boatInput");
+  const partsInput   = document.getElementById("partsInput");
+  const contentInput = document.getElementById("contentInput");
+  const titleSel     = document.getElementById("titleSelect");
+  if(racerInput)   racerInput.value   = "";
+  if(boatInput)    boatInput.value    = "";
+  if(partsInput)   partsInput.value   = "";
+  if(contentInput) contentInput.value = "";
+  if(titleSel)     titleSel.selectedIndex = 0;
+
+  const submitBtn = document.getElementById("submitPost");
+  if(submitBtn) submitBtn.textContent = "投稿";
+  const cancelBtn = document.getElementById("cancelEdit");
+  if(cancelBtn) cancelBtn.hidden = true;
+}
+
 async function loadPostsIntoList(machineNo){
   const statusEl = document.getElementById("postsStatus");
   const listEl = document.getElementById("postsList");
@@ -182,8 +249,16 @@ async function loadPostsIntoList(machineNo){
         partsEl.className = "parts";
         partsEl.textContent = `部品交換: ${p.parts_exchange}`;
       }
+      // ★修正ボタン
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.textContent = "修正";
+      editBtn.style.marginTop = "8px";
+      editBtn.style.marginRight = "8px";
+      editBtn.addEventListener("click", ()=> enterEditMode(p));
       // ★削除ボタン
       const delBtn = document.createElement("button");
+      delBtn.type = "button";
       delBtn.textContent = "削除";
       delBtn.style.marginTop = "8px";
       delBtn.addEventListener("click", async ()=>{
@@ -197,7 +272,8 @@ async function loadPostsIntoList(machineNo){
       card.appendChild(meta);
       if(partsEl) card.appendChild(partsEl);
       card.appendChild(content);
-      card.appendChild(delBtn); // ★追加
+      card.appendChild(editBtn); // ★追加
+      card.appendChild(delBtn);  // ★追加
       listEl.appendChild(card);
     }
   }catch(e){
@@ -260,13 +336,20 @@ function bindPostForm(){
       return;
     }
     try{
-      await createPost(currentMachine, payload);
-      // 投稿成功 → モーダルを閉じて、その号機の投稿一覧ページへ遷移
-      const dlg = document.getElementById("postsDialog");
-      if(dlg && dlg.open) dlg.close();
-      window.location.href = `/website/machines/${currentMachine}/`;
+      if(editingPostId != null){
+        // 更新モード → その場で更新し、モーダル内の一覧を再描画（遷移しない）
+        await updatePost(currentMachine, editingPostId, payload);
+        exitEditMode();
+        await loadPostsIntoList(currentMachine);
+      }else{
+        // 新規投稿 → モーダルを閉じて、その号機の投稿一覧ページへ遷移
+        await createPost(currentMachine, payload);
+        const dlg = document.getElementById("postsDialog");
+        if(dlg && dlg.open) dlg.close();
+        window.location.href = `/website/machines/${currentMachine}/`;
+      }
     }catch(e){
-      // createPost でアラート済み
+      // createPost / updatePost でアラート済み
     }
   };
 }
@@ -286,8 +369,9 @@ async function openPosts(machineNo){
   const linkEl = document.getElementById("openPageLink");
 
   currentMachine = machineNo;
+  exitEditMode();   // 前回の修正状態が残っていてもリセット
   if(titleEl) titleEl.textContent = `${machineNo}号機`;
-  
+
   //if(linkEl) linkEl.href = `/machines/${machineNo}/posts`;
   if(linkEl) linkEl.href = `/website/machines/${machineNo}/`;
   if(dlg && typeof dlg.showModal === "function") dlg.showModal();
@@ -316,6 +400,10 @@ async function openPosts(machineNo){
     }
   });
   assertCSRF(); // CSRFクッキー警告（無い場合だけconsoleに出す）
+
+  // 「編集をやめる」ボタン（修正モード解除）
+  const cancelBtn = document.getElementById("cancelEdit");
+  if(cancelBtn) cancelBtn.addEventListener("click", exitEditMode);
 
   // 使用ボートの選択肢を生成
   populateBoatOptions();

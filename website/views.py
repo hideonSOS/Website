@@ -99,22 +99,79 @@ class MotorCommentListCreateAPI(View):
 
 
 class MotorCommentDetailAPI(View):
-    """DELETE /api/machines/<machine_no>/posts/<pk>"""
+    """
+    DELETE /api/machines/<machine_no>/posts/<pk>         → 削除
+    PUT    /api/machines/<machine_no>/posts/<pk>         → 更新
+    POST   /api/machines/<machine_no>/posts/<pk>/delete  → 削除（互換）
+    POST   /api/machines/<machine_no>/posts/<pk>/update  → 更新（互換）
+    """
     def delete(self, request, machine_no, pk):
         obj = get_object_or_404(MotorComment, pk=pk, machine_no=machine_no)
         obj.delete()
         return HttpResponse(status=204)
 
     def get(self, *args, **kwargs):
-        return HttpResponseNotAllowed(["DELETE"])
+        return HttpResponseNotAllowed(["DELETE", "PUT"])
+
+    def put(self, request, machine_no, pk):
+        obj = get_object_or_404(MotorComment, pk=pk, machine_no=machine_no)
+        return self._apply_update(obj, request)
 
     def post(self, request, machine_no, pk):
-        # /.../delete だけ許可（互換ルート）
-        if str(request.path).endswith("/delete"):
+        path = str(request.path)
+        # /.../delete と /.../update だけ許可（メソッドを弾く環境向けの互換ルート）
+        if path.endswith("/delete"):
             obj = get_object_or_404(MotorComment, pk=pk, machine_no=machine_no)
             obj.delete()
             return HttpResponse(status=204)
-        return HttpResponseNotAllowed(["DELETE"])
+        if path.endswith("/update"):
+            obj = get_object_or_404(MotorComment, pk=pk, machine_no=machine_no)
+            return self._apply_update(obj, request)
+        return HttpResponseNotAllowed(["DELETE", "PUT"])
+
+    def _apply_update(self, obj, request):
+        """既存の MotorComment を payload で上書き保存する（POST 作成と同じ検証）"""
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return HttpResponseBadRequest("invalid json")
+
+        content = (payload.get("content") or "").strip()
+        parts_exchange = (payload.get("parts_exchange") or "").strip()
+        if not content and not parts_exchange:
+            return HttpResponseBadRequest("content is required")
+
+        boat_no = (str(payload.get("boat_no") or "")).strip()
+        if boat_no and not (boat_no.isdigit() and len(boat_no) <= 3):
+            return HttpResponseBadRequest("boat_no must be a number of up to 3 digits")
+
+        obj.author = (payload.get("author") or "匿名").strip() or "匿名"
+        obj.racer = (payload.get("racer") or "").strip()
+        obj.content = content
+        obj.title = (payload.get("title") or "").strip()
+        obj.boat_no = boat_no
+        obj.parts_exchange = parts_exchange
+        scheduled = payload.get("scheduled_at")
+        if scheduled:
+            try:
+                obj.scheduled_at = date.fromisoformat(scheduled)
+            except ValueError:
+                pass
+        else:
+            obj.scheduled_at = None
+        obj.save()
+
+        return JsonResponse({
+            "id": obj.id,
+            "author": obj.author,
+            "racer": obj.racer,
+            "content": obj.content,
+            "scheduled_at": obj.scheduled_at.isoformat() if obj.scheduled_at else None,
+            "created_at": obj.created_at.isoformat(),
+            "title": obj.title,
+            "boat_no": obj.boat_no or "",
+            "parts_exchange": obj.parts_exchange or "",
+        }, status=200)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

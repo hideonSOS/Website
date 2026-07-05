@@ -27,6 +27,7 @@ urlpatterns = [
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(), name="motor_posts_api"),
     path("api/machines/<int:machine_no>/posts/<int:pk>", MotorCommentDetailAPI.as_view(), name="motor_post_detail_api"),
     path("api/machines/<int:machine_no>/posts/<int:pk>/delete", MotorCommentDetailAPI.as_view(), name="motor_post_delete_api"),
+    path("api/machines/<int:machine_no>/posts/<int:pk>/update", MotorCommentDetailAPI.as_view(), name="motor_post_update_api"),
     path("machines/<int:machine_no>/", MotorCommentDetailView.as_view(), name="motor_comments_detail"),
     path('api/', include(router.urls)),
     path('motor_comments_total/', Motor_Comments_Total.as_view(), name='motor_comments_total'),
