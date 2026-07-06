@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>得点率グラフ</title>
-  <style>
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}得点率グラフ{% endblock %}
+
+{% block extra_css %}
+<style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       width: 100%;
@@ -63,6 +63,17 @@
       text-align: center;
     }
     .border-wrap input::placeholder { color: #475569; }
+    .topn-wrap { margin-left: 0; }   /* ボーダー欄のすぐ右に置く */
+    .topn-wrap select {
+      background: #0f172a;
+      color: #fb923c;
+      border: none;
+      border-bottom: 1px solid #475569;
+      outline: none;
+      font-size: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
     .chart-container {
       flex: 1;
       width: 100%;
@@ -78,9 +89,10 @@
       padding: 32px;
       text-align: center;
     }
-  </style>
-</head>
-<body>
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="graph-wrap">
   <div class="graph-header">
     <h2>得点率グラフ</h2>
@@ -89,6 +101,11 @@
       <label for="borderInput">ボーダー</label>
       <input type="number" id="borderInput" step="0.01" min="0" value="6.00">
     </div>
+    <div class="border-wrap topn-wrap">
+      <label for="topNSelect">上位</label>
+      <select id="topNSelect"></select>
+      <label for="topNSelect">位</label>
+    </div>
   </div>
 
   <div class="chart-container" id="chartContainer">
@@ -96,10 +113,22 @@
     <canvas id="rankingChart" style="display:none;"></canvas>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 (async () => {
+  // 上位◯位ドロップダウン（1〜52、初期値18）
+  const topNSelect = document.getElementById('topNSelect');
+  for (let i = 1; i <= 52; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    if (i === 18) opt.selected = true;
+    topNSelect.appendChild(opt);
+  }
+
   let data;
   try {
     const res = await fetch(`/live_score/api/ranking/?t=${Date.now()}`);
@@ -185,6 +214,28 @@
     },
   ];
 
+  // 上位◯位の境界線: ◯位の棒のすぐ右（モバイル横棒では下）にオレンジの線を描く
+  const topNPlugin = {
+    id: 'topNLine',
+    afterDatasetsDraw(chart) {
+      const n = parseInt(topNSelect.value, 10);
+      if (!n || n >= labels.length) return;  // 最下位より後ろには引けない
+      const horizontal = chart.options.indexAxis === 'y';
+      const scale = horizontal ? chart.scales.y : chart.scales.x;
+      const pos = (scale.getPixelForValue(n - 1) + scale.getPixelForValue(n)) / 2;
+      const { top, bottom, left, right } = chart.chartArea;
+      const c = chart.ctx;
+      c.save();
+      c.strokeStyle = '#f97316';
+      c.lineWidth = 2;
+      c.beginPath();
+      if (horizontal) { c.moveTo(left, pos); c.lineTo(right, pos); }
+      else            { c.moveTo(pos, top);  c.lineTo(pos, bottom); }
+      c.stroke();
+      c.restore();
+    },
+  };
+
   let chart;
 
   if (window.innerWidth > 768) {
@@ -193,6 +244,7 @@
     chart = new Chart(ctx, {
       type: 'bar',
       data: { labels, datasets },
+      plugins: [topNPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -237,6 +289,7 @@
     chart = new Chart(ctx, {
       type: 'bar',
       data: { labels, datasets },
+      plugins: [topNPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -284,7 +337,9 @@
     chart.data.datasets[3].data = new Array(labels.length).fill(isNaN(val) ? null : val);
     chart.update();
   });
+
+  // 上位◯位の変更 → 境界線を引き直す
+  topNSelect.addEventListener('change', () => chart.update());
 })();
 </script>
-</body>
-</html>
+{% endblock %}
