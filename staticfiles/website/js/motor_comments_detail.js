@@ -2,28 +2,6 @@ const API_BASE = "/website/api/machines";
     const machineNo = document.getElementById("machine-data").dataset.machineNo;
     let allPosts = [];
 
-    // === CSRF ===
-    function getCSRFToken(){
-    const m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
-    return m ? decodeURIComponent(m[1]) : "";
-    }
-
-    // === 投稿削除（DELETE、互換で POST /delete もフォールバック） ===
-    async function deletePost(machineNo, postId){
-    const headers = { "X-CSRFToken": getCSRFToken(), "X-Requested-With": "XMLHttpRequest" };
-    let res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}`, {
-        method: "DELETE", headers, credentials: "same-origin",
-    });
-    if(res.status !== 204){
-        res = await fetch(`${API_BASE}/${machineNo}/posts/${postId}/delete`, {
-        method: "POST", headers, credentials: "same-origin",
-        });
-    }
-    if(res.status !== 204){
-        throw new Error(`Delete failed ${res.status}`);
-    }
-    }
-
     async function fetchPosts(machineNo){
     try{
         const res = await fetch(`${API_BASE}/${machineNo}/posts`, {
@@ -82,8 +60,9 @@ const API_BASE = "/website/api/machines";
         return;
     }
 
+    // 古い順（上）→新しい順（下）で時系列に流す
     const sorted = posts.slice().sort((a, b) =>
-        new Date(b.created_at) - new Date(a.created_at)
+        new Date(a.created_at) - new Date(b.created_at)
     );
 
     const list = document.createElement("div");
@@ -111,27 +90,7 @@ const API_BASE = "/website/api/machines";
         card.appendChild(el);
         });
 
-        // === 操作ボタン（削除） ===
-        const actions = document.createElement("div");
-        actions.className = "post-actions";
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "post-del-btn";
-        delBtn.textContent = "削除";
-        delBtn.addEventListener("click", async () => {
-        if(!confirm("この投稿を削除します。よろしいですか？")) return;
-        delBtn.disabled = true;
-        try{
-            await deletePost(machineNo, p.id);
-            allPosts = await fetchPosts(machineNo);  // 再取得して再描画
-            renderPosts();
-        }catch(e){
-            alert("削除に失敗しました");
-            delBtn.disabled = false;
-        }
-        });
-        actions.appendChild(delBtn);
-        card.appendChild(actions);
+        // 削除・編集は入力ページ側で行うため、出力ページには操作ボタンを置かない
 
         list.appendChild(card);
     });

@@ -134,33 +134,10 @@ h1 {
   }
 }
 
-/* 操作ボタン（削除など） */
-.post-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.post-del-btn {
-  background: #0f172a;
-  color: #f87171;
-  border: 1px solid #ef4444;
-  border-radius: 8px;
-  padding: 4px 12px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color .15s ease, color .15s ease;
-}
-
-.post-del-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-}
-
-.post-del-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* カード最下行の下余白は付けない（コメント無し投稿でも末尾に空白を作らない） */
+.post-card > :last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 /* ---------- iPad（768px〜） ---------- */

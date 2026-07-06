@@ -4,6 +4,44 @@
   position: relative;   /* 通信中オーバーレイの基準 */
 }
 
+/* ── 上部見出し（左＝レース番号・ボーダー／右端＝更新時刻） ── */
+.race-heading {
+  display: flex;
+  align-items: baseline;
+  margin: 6px 0 10px;    /* 上下の余白は控えめに */
+}
+.rh-left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+#raceNoLabel {
+  font-size: 30px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  color: #38bdf8;
+  text-shadow: 0 0 8px #0ea5e9, 0 0 18px #0ea5e9;
+}
+.rh-border {
+  font-size: 18px;
+  font-weight: bold;
+  color: #93c5fd;
+}
+.rh-time {
+  margin-left: auto;     /* 右端へ寄せる */
+  font-size: 13px;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+@media (max-width: 820px) {
+  .race-heading {
+    margin: 4px 0 8px;
+  }
+  #raceNoLabel { font-size: 24px; }
+  .rh-border  { font-size: 15px; }
+  .rh-time    { font-size: 12px; }
+}
+
 /* ── 通信中オーバーレイ ── */
 .loading-overlay {
   position: absolute;
