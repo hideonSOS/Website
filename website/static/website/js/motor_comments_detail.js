@@ -60,10 +60,14 @@ const API_BASE = "/website/api/machines";
         return;
     }
 
-    // 古い順（上）→新しい順（下）で時系列に流す
-    const sorted = posts.slice().sort((a, b) =>
-        new Date(a.created_at) - new Date(b.created_at)
-    );
+    // 入力日（モーダルで指定した日付）の古い順（上）→新しい順（下）で時系列に流す。
+    // 入力日が未設定の投稿はDB登録日で代用し、同日内はDB登録順に並べる。
+    const sortKey = p => p.scheduled_at || (p.created_at || "").slice(0, 10);
+    const sorted = posts.slice().sort((a, b) => {
+        const ka = sortKey(a), kb = sortKey(b);
+        if(ka !== kb) return ka < kb ? -1 : 1;
+        return new Date(a.created_at) - new Date(b.created_at);
+    });
 
     const list = document.createElement("div");
     list.className = "post-list";
