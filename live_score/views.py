@@ -13,6 +13,9 @@ from .scraper import (
     RUN_COLUMNS,
     apply_deltas, get_next_slot, get_original_score_table, get_race_program,
 )
+# 得点率グラフ（RankingAPI）用: 2026-07-19 に参照元を競艇日和へ変更。
+# スクレイパーは live_score_v2 のものを共用する（詳細は live_score_v2/scraper.py 冒頭のメモ参照）
+from live_score_v2.scraper import get_score_map as get_kyoteibiyori_score_map
 
 # 差分を保存する唯一のファイル
 CONFIRMED_RESULTS_PATH = Path(__file__).resolve().parent / 'confirmed_results.json'
@@ -218,36 +221,67 @@ class ConfirmResultAPI(View):
 
 
 class RankingAPI(View):
-    """GET /live_score/api/ranking/"""
+    """GET /live_score/api/ranking/
+
+    2026-07-19: 参照元を住之江公式 rank.htm ＋ 手入力差分から競艇日和へ変更。
+    競艇日和はレース確定後数分で反映されるため手入力差分
+    （confirmed_results.json）を使う必要がなく、base_得点率 = 得点率 として返す
+    （グラフの「手入力加算分」「得点率減少」は常に0になる）。
+    旧実装は下のコメントアウトを参照。
+    """
     def get(self, request):
         try:
-            # 常に元データ + 差分から再計算（キャッシュなし）
-            df       = _compute_score_table()
-            run_cols = [c for c in RUN_COLUMNS if c in df.columns]
-            rows     = _build_disp(df, run_cols)
-
-            # base_得点率 = 元CSVの得点率列（差分適用前の公式値）
-            df_orig  = get_original_score_table()
-            base_map = {
-                int(k): float(v)
-                for k, v in zip(
-                    df_orig['登録番号'],
-                    pd.to_numeric(df_orig['得点率'], errors='coerce').fillna(0)
-                )
-                if pd.notna(k)
-            }
-            for row in rows:
-                toban = int(row.get('登録番号') or 0)
-                row['base_得点率'] = base_map.get(toban, 0.0)
-
-            updated_at = ''
-            if CONFIRMED_RESULTS_PATH.exists():
-                mtime      = CONFIRMED_RESULTS_PATH.stat().st_mtime
-                updated_at = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
-
+            score_map = get_kyoteibiyori_score_map()
+            rows = []
+            # score_map はサイトの表示順（順位順・帰郷選手は末尾）を保持している
+            for toban, info in score_map.items():
+                score = info.get('score')
+                rows.append({
+                    '順位':       info.get('rank') if info.get('rank') is not None else '',
+                    '登録番号':   toban,
+                    '選手名':     info.get('name', ''),
+                    '級別':       info.get('grade', ''),
+                    '得点率':     score if score is not None else '',
+                    '得点':       info.get('points', 0.0),
+                    '減点':       info.get('deduction', 0.0),
+                    '出走回数':   info.get('races', 0),
+                    'base_得点率': score if score is not None else 0.0,
+                })
+            updated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             return JsonResponse({'rows': rows, 'updated_at': updated_at})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+    # 【旧実装・保存用】rank.htm ＋ 手入力差分版（〜2026-07-19）
+    # def get(self, request):
+    #     try:
+    #         # 常に元データ + 差分から再計算（キャッシュなし）
+    #         df       = _compute_score_table()
+    #         run_cols = [c for c in RUN_COLUMNS if c in df.columns]
+    #         rows     = _build_disp(df, run_cols)
+    #
+    #         # base_得点率 = 元CSVの得点率列（差分適用前の公式値）
+    #         df_orig  = get_original_score_table()
+    #         base_map = {
+    #             int(k): float(v)
+    #             for k, v in zip(
+    #                 df_orig['登録番号'],
+    #                 pd.to_numeric(df_orig['得点率'], errors='coerce').fillna(0)
+    #             )
+    #             if pd.notna(k)
+    #         }
+    #         for row in rows:
+    #             toban = int(row.get('登録番号') or 0)
+    #             row['base_得点率'] = base_map.get(toban, 0.0)
+    #
+    #         updated_at = ''
+    #         if CONFIRMED_RESULTS_PATH.exists():
+    #             mtime      = CONFIRMED_RESULTS_PATH.stat().st_mtime
+    #             updated_at = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
+    #
+    #         return JsonResponse({'rows': rows, 'updated_at': updated_at})
+    #     except Exception as e:
+    #         return JsonResponse({'error': str(e)}, status=500)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

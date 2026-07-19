@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
 
-from .scraper import (
-    get_day_race_entries, get_next_race, get_race_program, get_score_map,
-)
+from .scraper import get_next_race, get_race_program, get_score_map
+# 旧（rank.htm 版）: 次走判定に raceindex の出走一覧を使っていた
+# from .scraper import get_day_race_entries
 
 
 class LiveScoreV2View(TemplateView):
@@ -25,15 +25,16 @@ class RaceProgramAPI(View):
         racers = get_race_program(race_no)
 
         try:
-            score_map = get_score_map()
+            score_map = get_score_map(race_no)
         except Exception as e:
             print(f'[live_score_v2] 得点率表取得エラー: {e}')
             score_map = {}
-        try:
-            entries = get_day_race_entries()
-        except Exception as e:
-            print(f'[live_score_v2] 出走一覧取得エラー: {e}')
-            entries = {}
+        # 旧（rank.htm 版）: 次走判定用に出走一覧を別リクエストで取得していた
+        # try:
+        #     entries = get_day_race_entries()
+        # except Exception as e:
+        #     print(f'[live_score_v2] 出走一覧取得エラー: {e}')
+        #     entries = {}
 
         for racer in racers:
             info = score_map.get(racer['toban'], {})
@@ -42,6 +43,7 @@ class RaceProgramAPI(View):
             racer['points']    = info.get('points', 0.0)
             racer['deduction'] = info.get('deduction', 0.0)
             racer['races']     = info.get('races', 0)
-            racer['next_race'] = get_next_race(racer['toban'], race_no, entries)
+            # 次走は得点率表の「早見」列（当日出走レース）から判定
+            racer['next_race'] = get_next_race(racer['toban'], race_no, score_map)
 
         return JsonResponse({'racers': racers})

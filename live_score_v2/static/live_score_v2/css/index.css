@@ -118,39 +118,19 @@
 .score-v2-table th:nth-child(2),  .score-v2-table td:nth-child(2)  { width: 100px; } /* 選手名 */
 .score-v2-table th:nth-child(3),  .score-v2-table td:nth-child(3)  { width: 62px;  } /* 得点率 */
 .score-v2-table th:nth-child(4),  .score-v2-table td:nth-child(4)  { width: 44px;  } /* 順位 */
-/* 1着〜6着（下段「無事故当確」が潰れない幅） */
+/* 1着〜6着 */
 .score-v2-table th:nth-child(n+5):nth-child(-n+10),
 .score-v2-table td:nth-child(n+5):nth-child(-n+10)                 { width: 78px;  }
 .score-v2-table th:nth-child(11), .score-v2-table td:nth-child(11) { width: 84px;  } /* 必要得点（ヘッダーが省略されない幅） */
 .score-v2-table th:nth-child(12), .score-v2-table td:nth-child(12) { width: 56px;  } /* 2走情報 */
 
-/* 1着〜6着セル：上下2段 */
-.score-v2-table td.sim-cell {
-  padding: 0;
-  height: auto;
-}
-.sim-upper,
-.sim-lower {
-  height: 39px;      /* 26px→39px：本体行1.5倍に合わせる */
-  line-height: 39px;
-  padding: 0 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sim-lower {
-  border-top: 1px solid #333;
-  font-size: 13.365px;   /* 14.85px→13.365px：さらに90%に縮小 */
-}
-.sim-lower.sim-ok {
-  color: #4ade80;
-  font-weight: bold;
-}
-.sim-lower.sim-lack {
-  color: #fb923c;
-  font-weight: bold;
-}
 .score-v2-table tbody tr:hover {
   background: #111827;
+}
+
+/* 当確セル（1着〜6着）: 背景を薄いシアンに */
+.score-v2-table td.sim-ok {
+  background: rgba(56, 189, 248, 0.22);
 }
 
 /* ── 枠番列（ボートレース枠色） ── */

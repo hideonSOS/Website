@@ -55,17 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return (racer.points + currentRankPoints()[rankIndex] - racer.deduction) / (racer.races + 1);
   }
 
-  // 早見表下段: その着順で必要得点を満たすかの判定
-  // 残り2走の場合、後続レースは最低でも6着=1点は取れる（無事故完走）前提で当確判定
-  function judgeCell(racer, rankIndex, border) {
+  // その着順で必要得点を満たすか（当確か）の判定
+  // 残り2走の場合、後続レースは最低でも6着=1点は取れる（無事故完走）前提
+  function isSecured(racer, rankIndex, border) {
     const remaining = effectiveNextRace(racer) != null ? 2 : 1;
     const needed = border * (racer.races + remaining) - (racer.points - racer.deduction);
     const shortfall = needed - currentRankPoints()[rankIndex];
-    const guaranteed = remaining - 1; // 後続レースで最低限取れる点
-    if (shortfall <= guaranteed) {
-      return { ok: true, text: '当 確' };
-    }
-    return { ok: false, text: shortfall.toFixed(2) };
+    return shortfall <= remaining - 1; // 後続レースで最低限取れる点
   }
 
   async function loadRaceProgram() {
@@ -75,10 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.cells[2].textContent = '';
       tr.cells[3].textContent = '';
       for (let c = 4; c <= 9; c++) {
-        tr.cells[c].querySelector('.sim-upper').textContent = '';
-        const lower = tr.cells[c].querySelector('.sim-lower');
-        lower.textContent = '';
-        lower.classList.remove('sim-ok', 'sim-lack');
+        tr.cells[c].textContent = '';
+        tr.cells[c].classList.remove('sim-ok');
       }
       tr.cells[10].textContent = '';
       tr.cells[11].textContent = '';
@@ -94,19 +88,16 @@ document.addEventListener('DOMContentLoaded', () => {
         tr.cells[2].textContent = racer && racer.score != null ? racer.score.toFixed(2) : '';
         tr.cells[3].textContent = racer && racer.rank != null ? racer.rank : '';
         for (let ri = 0; ri < 6; ri++) {
-          tr.cells[4 + ri].querySelector('.sim-upper').textContent =
-            racer ? calcSimulatedScore(racer, ri).toFixed(2) : '';
-          const lower = tr.cells[4 + ri].querySelector('.sim-lower');
-          lower.classList.remove('sim-ok', 'sim-lack');
-          if (racer) {
-            const judge = judgeCell(racer, ri, border);
-            lower.textContent = judge.text;
-            lower.classList.add(judge.ok ? 'sim-ok' : 'sim-lack');
-          } else {
-            lower.textContent = '';
-          }
+          const cell = tr.cells[4 + ri];
+          cell.textContent = racer ? calcSimulatedScore(racer, ri).toFixed(2) : '';
+          // 当確セルは背景を薄いシアンに（非当確は無色のまま）
+          cell.classList.toggle('sim-ok', racer ? isSecured(racer, ri, border) : false);
         }
-        tr.cells[10].textContent = racer ? calcRequiredPoints(racer, border).toFixed(2) : '';
+        // 必要得点は小数点以下を全て切り上げて整数表示
+        // （浮動小数点誤差による誤繰り上げ防止のため、先に小数第2位へ丸める）
+        tr.cells[10].textContent = racer
+          ? String(Math.ceil(Math.round(calcRequiredPoints(racer, border) * 100) / 100))
+          : '';
         tr.cells[11].textContent = racer && racer.next_race != null ? `${racer.next_race}R` : '';
         tr.dataset.toban = racer ? racer.toban : '';
       });
