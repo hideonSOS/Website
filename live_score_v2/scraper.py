@@ -22,6 +22,39 @@ RACELIST_URL = 'https://www.boatrace.jp/owpc/pc/race/racelist'
 # RACEINDEX_URL = 'https://www.boatrace.jp/owpc/pc/race/raceindex'
 TOKUTEN_URL = 'https://kyoteibiyori.com/race_tokuten.php'
 
+# ============================================================
+# 【転用メモ】競艇日和(kyoteibiyori.com)の横展開計画  ※2026-08-03 記録
+# ============================================================
+# 競艇日和は反映が速く精度も高いため、得点率以外の処理にも転用したい。
+#
+# 【現状・済】得点率グラフ表示ページで既に活用中
+#   ・live_score/graph.html → RankingAPI(live_score/views.py) が
+#     ここの get_score_map() を get_kyoteibiyori_score_map として共用。
+#     2026-07-19 に参照元を住之江公式 rank.htm から競艇日和へ切替済み。
+#
+# 【TODO】さしあたり = 上記グラフページを起点に横展開する。
+#   ・当スクレイパー(get_score_map / get_score_table)を得点率専用から
+#     汎用の競艇日和クライアントへ拡張し、他アプリ(live_score / racer_page 等)
+#     からも呼べる形に整理する。
+#   ・他ページ(選手ページ・モーター等)の参照元も順次 競艇日和 へ寄せる検討。
+#   ・VENUE_CODE は現在 '12'(住之江) 固定。他場対応時はここを引数化する必要あり。
+#
+# 【開催日 検証チェックリスト】※住之江(場コード12)の開催日でないと実データ検証不可。
+#   ↓ 開催日中に速やかに実施してURL元変更・横展開を確定させる手順。
+#   1. 住之江(12)が本日開催中か確認（非開催日は競艇日和のテーブルが空/不正）。
+#   2. 生データを目視: ブラウザで下記URLを開き選手6名分の得点率が並ぶか確認。
+#      https://kyoteibiyori.com/race_tokuten.php?place_no=12&race_no=1&hiduke=YYYYMMDD
+#      （hiduke=当日 YYYYMMDD。race_no は 1〜12 どれでもテーブル内容は同一）
+#   3. スクレイパー単体確認（Website/ で venv のpython使用, Django shell）:
+#      python manage.py shell -c "from live_score_v2.scraper import get_score_map; import pprint; pprint.pprint(get_score_map())"
+#      → 期待: 6名前後の {score, rank, grade, name, points, deduction, races,
+#        today_races} が順位順で返る。score が None/0 ばかりなら列ズレを疑う。
+#   4. 画面確認: 開発サーバ(.claude/launch.json の django-dev, :8000)起動 →
+#      /live_score/graph/ でグラフ描画、/live_score/api/ranking/ で rows が返るか。
+#   5. 問題なければ他アプリの参照元を競艇日和へ寄せる横展開に着手。
+#      static配下を触った場合は push前 collectstatic 必須（プロジェクト運用メモ参照）。
+# ============================================================
+
 HTTP_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
 }
