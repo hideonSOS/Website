@@ -1,0 +1,84 @@
+{% extends 'website/base.html' %}
+
+{% block title %}モーター情報 Excel取込{% endblock %}
+
+{% block content %}
+<div class="upload-wrap">
+  <h1>モーター別情報 コメントExcel取込</h1>
+  <p class="lead">
+    Excelファイルを選んでアップロードすると、コメントをまとめて追加登録します。
+    <strong>既存のデータは削除・変更しません（追加のみ）。</strong>
+    部品交換は取込対象外です（従来どおり手入力）。
+  </p>
+
+  {% if result %}
+    <div class="msg ok">{{ result }}</div>
+  {% endif %}
+  {% if error %}
+    <div class="msg ng">
+      <div class="ng-head">{{ error }}</div>
+      {% if error_details %}
+        <ul class="ng-list">
+          {% for d in error_details %}<li>{{ d }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <p class="tmpl">
+    <a href="{% url 'website:motor_comments_template' %}">最新テンプレートをダウンロード（.xlsx）</a>
+    <span class="tmpl-note">開催リスト（ドロップダウン）は最新の状態で出力されます。</span>
+  </p>
+
+  <form method="post" enctype="multipart/form-data" class="upload-form">
+    {% csrf_token %}
+    <input type="file" name="excel" accept=".xlsx,.xlsm" required>
+    <button type="submit">アップロードして取込</button>
+  </form>
+
+  <section class="spec">
+    <h2>Excelの列</h2>
+    <p>1行目はヘッダー、2行目以降が1行＝1コメントです。列の順序は自由（ヘッダー名で判定）。</p>
+    <table>
+      <thead>
+        <tr><th>列（ヘッダー名）</th><th>必須</th><th>内容・ルール</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>号機</td><td>必須</td><td>号機番号（正の整数）</td></tr>
+        <tr><td>コメント</td><td>必須</td><td>コメント本文</td></tr>
+        <tr><td>発言日</td><td>必須</td><td>コメントが発言された日（YYYY-MM-DD 等の日付）。時系列の並びに使用</td></tr>
+        <tr><td>開催</td><td>任意</td><td>入力フォームの開催一覧と<strong>完全一致</strong>が必要（不一致はエラー）</td></tr>
+        <tr><td>使用選手</td><td>任意</td><td>10文字まで</td></tr>
+        <tr><td>使用ボート</td><td>任意</td><td>数字3桁まで</td></tr>
+        <tr><td>投稿者</td><td>任意</td><td>空欄なら「匿名」</td></tr>
+      </tbody>
+    </table>
+    <p class="note">
+      1行でも不正があると<strong>何も登録されません</strong>。エラー時はメッセージに従ってファイルを修正し、再アップロードしてください。
+    </p>
+  </section>
+</div>
+
+<style>
+  .upload-wrap { max-width: 820px; margin: 24px auto; padding: 0 16px; line-height: 1.7; }
+  .upload-wrap h1 { font-size: 1.4rem; margin-bottom: 8px; }
+  .lead { background: #f5f7fa; border: 1px solid #dfe4ea; border-radius: 8px; padding: 12px 14px; }
+  .tmpl { margin: 18px 0 4px; }
+  .tmpl a { font-weight: 700; color: #2f80ed; }
+  .tmpl-note { display: block; font-size: 0.88rem; color: #667; margin-top: 2px; }
+  .upload-form { margin: 20px 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .upload-form button { padding: 8px 18px; border: 0; border-radius: 6px; background: #2f80ed; color: #fff; cursor: pointer; font-size: 1rem; }
+  .upload-form button:hover { background: #1f6fd6; }
+  .msg { border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+  .msg.ok { background: #e7f6ec; border: 1px solid #9dd6b0; color: #1b6b3a; }
+  .msg.ng { background: #fdecec; border: 1px solid #f0b4b4; color: #a3282a; }
+  .ng-head { font-weight: 700; margin-bottom: 6px; }
+  .ng-list { margin: 0; padding-left: 20px; }
+  .spec { margin-top: 28px; }
+  .spec h2 { font-size: 1.1rem; }
+  .spec table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .spec th, .spec td { border: 1px solid #d7dbe0; padding: 6px 10px; text-align: left; font-size: 0.95rem; }
+  .spec th { background: #eef2f6; }
+  .spec .note { color: #a3282a; }
+</style>
+{% endblock %}

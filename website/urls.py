@@ -11,6 +11,8 @@ from .views import (
     EventViewSet,
     Motor_Comments_Index,
     Motor_Comments_Total,
+    MotorCommentExcelUpload,
+    MotorCommentTemplateDownload,
     grid_data_api,
 )
 
@@ -23,6 +25,8 @@ app_name = 'website'
 urlpatterns = [
     path("calendar/", Calendar.as_view(), name="calendar"),
     path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
+    path("motor_comments_upload/", MotorCommentExcelUpload.as_view(), name="motor_comments_upload"),
+    path("motor_comments_template/", MotorCommentTemplateDownload.as_view(), name="motor_comments_template"),
     path("motor_comments_index/", Motor_Comments_Index.as_view(), name="motor_comments_index"),
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(), name="motor_posts_api"),
     path("api/machines/<int:machine_no>/posts/<int:pk>", MotorCommentDetailAPI.as_view(), name="motor_post_detail_api"),
