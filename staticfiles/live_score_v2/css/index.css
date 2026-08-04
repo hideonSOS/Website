@@ -27,6 +27,12 @@
   font-weight: bold;
   color: #93c5fd;
 }
+.rh-border-time {
+  font-size: 12px;
+  font-weight: normal;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+}
 .rh-time {
   margin-left: auto;     /* 右端へ寄せる */
   font-size: 13px;

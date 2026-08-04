@@ -15,7 +15,8 @@ from .scraper import (
 )
 # 得点率グラフ（RankingAPI）用: 2026-07-19 に参照元を競艇日和へ変更。
 # スクレイパーは live_score_v2 のものを共用する（詳細は live_score_v2/scraper.py 冒頭のメモ参照）
-from live_score_v2.scraper import get_score_map as get_kyoteibiyori_score_map
+# get_ranking は (得点率マップ, ボーダー得点) を1リクエストで返す。
+from live_score_v2.scraper import get_ranking
 
 # 差分を保存する唯一のファイル
 CONFIRMED_RESULTS_PATH = Path(__file__).resolve().parent / 'confirmed_results.json'
@@ -231,7 +232,7 @@ class RankingAPI(View):
     """
     def get(self, request):
         try:
-            score_map = get_kyoteibiyori_score_map()
+            score_map, border = get_ranking()
             rows = []
             # score_map はサイトの表示順（順位順・帰郷選手は末尾）を保持している
             for toban, info in score_map.items():
@@ -248,7 +249,9 @@ class RankingAPI(View):
                     'base_得点率': score if score is not None else 0.0,
                 })
             updated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            return JsonResponse({'rows': rows, 'updated_at': updated_at})
+            # border: 競艇日和の予選通過ライン得点（赤線）。グラフのボーダー初期値に使う。
+            # 取得できなければ None を返し、画面側は既定値6.00にフォールバックする。
+            return JsonResponse({'rows': rows, 'updated_at': updated_at, 'border': border})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 

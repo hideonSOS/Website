@@ -147,6 +147,12 @@
 
   document.getElementById('updatedAt').textContent = `更新: ${data.updated_at || ''}`;
 
+  // ボーダー初期値: 競艇日和の予選通過ライン得点（赤線）。取得できなければ 6.00。
+  // 人間が判断で動かすことがあるため、初期表示のみ反映し以後は手入力で編集可能。
+  const border = (data.border !== undefined && data.border !== null)
+    ? parseFloat(data.border) : 6.00;
+  document.getElementById('borderInput').value = border;
+
   const labels  = rows.map(r => r['選手名'] || '');
   const current = rows.map(r => parseFloat(r['得点率']) || 0);
   const base    = rows.map(r => {
@@ -204,7 +210,7 @@
     {
       type: 'line',
       label: 'ボーダー',
-      data: new Array(labels.length).fill(6.00),
+      data: new Array(labels.length).fill(border),
       borderColor: '#facc15',
       borderWidth: 2,
       borderDash: [6, 4],

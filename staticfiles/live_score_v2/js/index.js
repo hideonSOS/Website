@@ -13,7 +13,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   syncHeading();                            // 初期表示
   raceSelect.addEventListener('change', syncHeading);
-  borderInput.addEventListener('input', syncHeading);
+  borderInput.addEventListener('input', () => {
+    syncHeading();
+    // 手動でボーダーを動かしたら「〇〇時〇〇分現在」表示は消す（自動取得値ではないため）
+    const bt = document.getElementById('borderTime');
+    if (bt) bt.textContent = '';
+  });
+
+  // ボーダー自動取得: 競艇日和の予選通過ライン（赤線）を初期値に反映し、
+  // 「〇〇時〇〇分現在」を表示する。取得後も手入力で自由に変更可能。
+  const borderTimeEl = document.getElementById('borderTime');
+  function setBorderTime() {
+    if (!borderTimeEl) return;
+    const t = new Date();
+    borderTimeEl.textContent = `（${t.getHours()}時${String(t.getMinutes()).padStart(2, '0')}分現在）`;
+  }
+  async function loadBorder() {
+    try {
+      const res = await fetch(`api/border/?t=${Date.now()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.border != null) {
+        borderInput.value = parseFloat(data.border).toFixed(2);
+        syncHeading();
+        setBorderTime();
+      }
+    } catch (e) {
+      console.error('[live_score_v2] ボーダー取得エラー:', e);
+    }
+  }
+  loadBorder();                             // ページ遷移時に自動更新
 
   // 更新時刻（データ取得完了時に記録）
   function setUpdateTime() {

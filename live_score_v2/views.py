@@ -2,13 +2,34 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
 
-from .scraper import get_next_race, get_race_program, get_score_map
+from datetime import datetime
+
+from .scraper import get_border_score, get_next_race, get_race_program, get_score_map
 # 旧（rank.htm 版）: 次走判定に raceindex の出走一覧を使っていた
 # from .scraper import get_day_race_entries
 
 
 class LiveScoreV2View(TemplateView):
     template_name = 'live_score_v2/index.html'
+
+
+class BorderAPI(View):
+    """競艇日和の予選通過ライン得点（赤線）とその取得時刻を返す。
+
+    得点率計算ページを開いた時に自動でボーダー初期値を更新するために使う。
+    取得できなければ border=None を返し、画面側は既定値のままにする。
+    """
+
+    def get(self, request):
+        try:
+            border = get_border_score()
+        except Exception as e:
+            print(f'[live_score_v2] ボーダー取得エラー: {e}')
+            border = None
+        return JsonResponse({
+            'border':     border,
+            'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        })
 
 
 class RaceProgramAPI(View):

@@ -107,8 +107,30 @@ def get_score_map(race_no=1):
     辞書の並び順はサイトの表示順（順位順・帰郷選手は末尾）を保持する。
     列構成: 順位 | 選手情報(登録番号 級別 選手名) | 得点率 | 得点 | 減点 | 着順 | 早見 | 備考
     """
+    return _parse_score_map(get_score_table(race_no))
+
+
+def get_border_score(race_no=1):
+    """予選通過ライン（ボーダー）の得点率を返す（無ければ None）。
+
+    競艇日和は通過ラインの行に border-top:red の行スタイルを付けて赤線を描く。
+    赤線はその行の「上」に引かれるため、通過している最下位＝赤線の1つ上の行。
+    その選手の得点率＝ボーダー得点を返す。
+    ※ 人間が判断でラインを動かすこともあるため、呼び出し側では初期値として使い、
+      以後は編集可能にする想定。
+    """
+    return _parse_border_score(get_score_table(race_no))
+
+
+def get_ranking(race_no=1):
+    """(得点率マップ, ボーダー得点) を1回のリクエストで取得して返す。"""
+    rows = get_score_table(race_no)
+    return _parse_score_map(rows), _parse_border_score(rows)
+
+
+def _parse_score_map(rows):
     score_map = {}
-    for tr in get_score_table(race_no):
+    for tr in rows:
         cells = [td.get_text(' ', strip=True) for td in tr.find_all('td')]
         if len(cells) < 7:
             continue
@@ -129,6 +151,23 @@ def get_score_map(race_no=1):
             'today_races': [int(x[:-1]) for x in hayami.split() if re.fullmatch(r'\d+R', x)],
         }
     return score_map
+
+
+def _parse_border_score(rows):
+    """行スタイルに border-top(赤) を持つ行の直前＝通過最下位の得点率を返す。"""
+    prev_score = None
+    for tr in rows:
+        style = tr.get('style') or ''
+        if 'border-top' in style and 'red' in style:
+            return prev_score   # 赤線は当行の上＝直前行が通過最下位
+        cells = [td.get_text(' ', strip=True) for td in tr.find_all('td')]
+        if len(cells) < 7:
+            continue
+        parts = cells[1].split(None, 2)
+        if not parts or not parts[0].isdigit():
+            continue
+        prev_score = _to_float(cells[2])
+    return None
 
 
 def _to_float(s):
