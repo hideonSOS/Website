@@ -5,6 +5,7 @@ from .models import MotorComment, Title, RaceDay, Event
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse, HttpResponseNotFound
 import io
 import json
+import re
 from urllib.parse import quote
 from datetime import date, datetime, time, timedelta
 from django.shortcuts import get_object_or_404
@@ -270,15 +271,43 @@ def _xl_int(v):
 
 
 def _xl_date(v):
+    """
+    セル値をゆるく日付へ変換する。Excelの日付型セルはそのまま、
+    文字列は次のような書式を受け付ける（区切りは - / . 空白 いずれも可、
+    2桁の年は 2000 年代として解釈）：
+      2026-07-10 / 2026/07/10 / 2026.7.10 / 26-7-10 / 260710 / 20260710
+    パースできなければ None。
+    """
     if v is None or v == "":
         return None
     if isinstance(v, datetime):
         return v.date()
     if isinstance(v, date):
         return v
-    s = str(v).strip().replace("/", "-")
+
+    # 全角の数字・記号を半角へ寄せる
+    s = str(v).strip().translate(
+        str.maketrans("０１２３４５６７８９／．－　", "0123456789/.- ")
+    )
+    if not s:
+        return None
+
+    m = re.match(r"^(\d{1,4})[-/.\s]+(\d{1,2})[-/.\s]+(\d{1,2})$", s)
+    if m:
+        y, mo, d = (int(g) for g in m.groups())
+    else:
+        digits = re.sub(r"\D", "", s)
+        if len(digits) == 8:        # YYYYMMDD
+            y, mo, d = int(digits[0:4]), int(digits[4:6]), int(digits[6:8])
+        elif len(digits) == 6:      # YYMMDD
+            y, mo, d = int(digits[0:2]), int(digits[2:4]), int(digits[4:6])
+        else:
+            return None
+
+    if y < 100:
+        y += 2000
     try:
-        return date.fromisoformat(s)
+        return date(y, mo, d)
     except ValueError:
         return None
 
@@ -288,7 +317,7 @@ MOTOR_EXCEL_HEADERS = ["号機", "コメント", "発言日", "開催", "使用�
 MOTOR_EXCEL_NOTES = {
     "号機": "必須：号機番号（正の整数）",
     "コメント": "必須：コメント本文",
-    "発言日": "必須：発言された日。時系列の並びに使用（例 2026-07-10）",
+    "発言日": "必須：発言された日。時系列の並びに使用（例 2026-07-10 / 2026/7/10 / 260710 いずれも可）",
     "開催": "任意：セルのドロップダウンから選択（完全一致必須）",
     "使用選手": "任意：10文字まで",
     "使用ボート": "任意：数字3桁まで",
