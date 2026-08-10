@@ -134,6 +134,19 @@ h1 {
   }
 }
 
+/* コメント本文も部品交換と同様に強調。ただし部品交換(黄色)と区別するため水色にする */
+.post-card .content {
+  color: #7dd3fc;
+  font-weight: 700;
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+  padding: 3px 0;      /* 上下に少しだけ余白 */
+}
+@media (min-width: 768px) {
+  .post-card .content {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
+}
+
 /* カード最下行の下余白は付けない（コメント無し投稿でも末尾に空白を作らない） */
 .post-card > :last-child {
   margin-bottom: 0;
