@@ -38,6 +38,23 @@ class Calendar(TemplateView):
     template_name = "website/calendar.html"
 
 
+def _parse_machine_no(value):
+    """
+    payload の machine_no を検証して int を返す。
+    未指定（None / 空文字）なら None を返す（＝変更なし）。
+    整数でない・範囲(1〜100)外なら ValueError を投げる。
+    """
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        n = int(value)
+    except (ValueError, TypeError):
+        raise ValueError("machine_no must be an integer")
+    if not (1 <= n <= 100):
+        raise ValueError("machine_no must be between 1 and 100")
+    return n
+
+
 class MotorCommentListCreateAPI(View):
     """
     GET  /api/machines/<machine_no>/posts  → その号機のコメント一覧(JSON)
@@ -48,6 +65,7 @@ class MotorCommentListCreateAPI(View):
         data = [
             {
                 "id": c.id,
+                "machine_no": c.machine_no,
                 "author": c.author or "匿名",
                 "racer": c.racer or "",
                 "content": c.content,
@@ -82,7 +100,14 @@ class MotorCommentListCreateAPI(View):
         scheduled = payload.get("scheduled_at")
         title = (payload.get("title") or "").strip()
 
-        obj = MotorComment(machine_no=machine_no, author=author, content=content, racer=racer, title=title,
+        # 号機はpayloadで上書き可能（未指定ならURLの号機を使用）
+        try:
+            override = _parse_machine_no(payload.get("machine_no"))
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
+        effective_machine = override if override is not None else machine_no
+
+        obj = MotorComment(machine_no=effective_machine, author=author, content=content, racer=racer, title=title,
                            boat_no=boat_no, parts_exchange=parts_exchange)
         if scheduled:
             try:
@@ -93,6 +118,7 @@ class MotorCommentListCreateAPI(View):
 
         return JsonResponse({
             "id": obj.id,
+            "machine_no": obj.machine_no,
             "author": obj.author,
             "racer": obj.racer,
             "content": obj.content,
@@ -151,6 +177,14 @@ class MotorCommentDetailAPI(View):
         if boat_no and not (boat_no.isdigit() and len(boat_no) <= 3):
             return HttpResponseBadRequest("boat_no must be a number of up to 3 digits")
 
+        # 号機の修正に対応（未指定なら現状維持）
+        try:
+            new_machine = _parse_machine_no(payload.get("machine_no"))
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
+        if new_machine is not None:
+            obj.machine_no = new_machine
+
         obj.author = (payload.get("author") or "匿名").strip() or "匿名"
         obj.racer = (payload.get("racer") or "").strip()
         obj.content = content
@@ -169,6 +203,7 @@ class MotorCommentDetailAPI(View):
 
         return JsonResponse({
             "id": obj.id,
+            "machine_no": obj.machine_no,
             "author": obj.author,
             "racer": obj.racer,
             "content": obj.content,
