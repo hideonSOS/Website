@@ -59,6 +59,8 @@ const API_BASE = "/website/api/machines";
         output.textContent = "条件に一致する投稿はありません";
         return;
     }
+    // 投稿者・開催を各カードに出すかどうか（ボタンが押されているときだけ）
+    const showMeta = document.getElementById("btnMeta")?.classList.contains("active");
 
     // 入力日（モーダルで指定した日付）の古い順（上）→新しい順（下）で時系列に流す。
     // 入力日が未設定の投稿はDB登録日で代用し、同日内はDB登録順に並べる。
@@ -77,11 +79,14 @@ const API_BASE = "/website/api/machines";
         card.className = "post-card";
 
         // ラベルなしで1データ1行。空のデータは行ごと省略する
-        // 投稿者(author)と開催シリーズ(title)は出力ページでは表示しない
+        // 投稿者(author)と開催シリーズ(title)は行数を抑えるため既定では出さず、
+        // 「投稿者・開催」ボタンが押されているときだけ表示する
         const rows = [
-        { cls: "meta",    val: p.racer },
+        { cls: "meta",    val: showMeta ? p.author : "" },
+        { cls: "racer",   val: p.racer },
         { cls: "meta",    val: p.scheduled_at },
         { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
+        { cls: "title",   val: showMeta ? p.title : "" },
         { cls: "parts",   val: p.parts_exchange },
         { cls: "content", val: p.content }
         ];

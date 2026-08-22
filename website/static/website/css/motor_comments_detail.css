@@ -110,6 +110,7 @@ h1 {
 /* カード内の各行は色・サイズを統一 */
 .meta,
 .title,
+.racer,
 .parts,
 .content {
   font-size: 11px;  /* h1（モーター投稿一覧）と同じサイズ */
@@ -130,6 +131,16 @@ h1 {
 }
 @media (min-width: 768px) {
   .post-card .parts {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
+}
+
+/* 使用選手は時系列で追う手がかりになるため、他のmeta行より大きめにする */
+.post-card .racer {
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+}
+@media (min-width: 768px) {
+  .post-card .racer {
     font-size: 15.6px; /* 本文(13px)の1.2倍 */
   }
 }
@@ -170,6 +181,7 @@ h1 {
 
   .meta,
   .title,
+  .racer,
   .parts,
   .content {
     font-size: 13px;  /* h1と同じサイズ */
@@ -192,6 +204,7 @@ h1 {
 
   .meta,
   .title,
+  .racer,
   .parts,
   .content {
     font-size: 13px;  /* h1と同じサイズ（タブレットと共通） */
