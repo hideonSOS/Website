@@ -77,12 +77,11 @@ const API_BASE = "/website/api/machines";
         card.className = "post-card";
 
         // ラベルなしで1データ1行。空のデータは行ごと省略する
+        // 投稿者(author)と開催シリーズ(title)は出力ページでは表示しない
         const rows = [
-        { cls: "meta",    val: p.author },
         { cls: "meta",    val: p.racer },
         { cls: "meta",    val: p.scheduled_at },
         { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
-        { cls: "title",   val: p.title },
         { cls: "parts",   val: p.parts_exchange },
         { cls: "content", val: p.content }
         ];
