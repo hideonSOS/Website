@@ -81,14 +81,15 @@ const API_BASE = "/website/api/machines";
         // ラベルなしで1データ1行。空のデータは行ごと省略する
         // 投稿者(author)と開催シリーズ(title)は行数を抑えるため既定では出さず、
         // 「投稿者・開催」ボタンが押されているときだけ表示する
+        // 並び順は 日付 → 選手 → コメント(部品交換)。補足情報はその後ろに置く
         const rows = [
-        { cls: "meta",    val: showMeta ? p.author : "" },
-        { cls: "racer",   val: p.racer },
         { cls: "meta",    val: p.scheduled_at },
-        { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
-        { cls: "title",   val: showMeta ? p.title : "" },
+        { cls: "racer",   val: p.racer },
         { cls: "parts",   val: p.parts_exchange },
-        { cls: "content", val: p.content }
+        { cls: "content", val: p.content },
+        { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
+        { cls: "meta",    val: showMeta ? p.author : "" },
+        { cls: "title",   val: showMeta ? p.title : "" }
         ];
         rows.forEach(r => {
         if(!r.val) return;
