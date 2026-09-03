@@ -276,7 +276,8 @@ def grid_data_api(request):
 # Excelからコメントを一括取込（コメントの一部をまとめて追加する補助機能）
 # ------------------------------------------------------------
 # ・追加（新規作成）専用。既存データの削除・上書きは一切しない。
-# ・部品交換(parts_exchange)は取込対象外（手入力を継続）。
+# ・部品交換(parts_exchange)も取込対象（部品リストと完全一致必須・空欄可）。
+#   部品交換がある行はコメント空欄可（入力フォームと同じルール）。
 # ・「発言日」列 → created_at に反映（auto_now_add を保存後 update で上書き）。
 #   コメントの流れは created_at の時系列で追跡するため。scheduled_at(入力日)は使わない。
 # ・厳格な all-or-nothing 検証: 1行でも不正なら何も保存しない。
@@ -347,11 +348,20 @@ def _xl_date(v):
         return None
 
 
+# 部品交換の選択肢（入力フォーム motor_comments.html のドロップダウンと同一）
+MOTOR_PARTS_CHOICES = [
+    "リング×１", "リング×２", "リング×３", "リング×４",
+    "ピストン×１", "ピストン×２",
+    "クランクシャフト", "シリンダーケース", "キャブレター",
+    "ギヤケース", "キャリアボデー", "プロペラ交換",
+]
+
 # Excelヘッダー（列順）と各列の説明。取込・テンプレDLの両方で共有する。
-MOTOR_EXCEL_HEADERS = ["号機", "コメント", "発言日", "開催", "使用選手", "使用ボート", "投稿者"]
+MOTOR_EXCEL_HEADERS = ["号機", "コメント", "部品交換", "発言日", "開催", "使用選手", "使用ボート", "投稿者"]
 MOTOR_EXCEL_NOTES = {
     "号機": "必須：号機番号（正の整数）",
-    "コメント": "必須：コメント本文",
+    "コメント": "コメント本文（部品交換を入力した行は空欄可。両方空はエラー）",
+    "部品交換": "任意：セルのドロップダウンから選択（完全一致必須）",
     "発言日": "必須：発言された日。時系列の並びに使用（例 2026-07-10 / 2026/7/10 / 260710 いずれも可）",
     "開催": "任意：セルのドロップダウンから選択（完全一致必須）",
     "使用選手": "任意：10文字まで",
@@ -377,7 +387,7 @@ def build_motor_template_workbook():
 
     valid_titles = motor_titles_ordered()
     max_rows = 500
-    widths = {"号機": 8, "コメント": 46, "発言日": 14, "開催": 40,
+    widths = {"号機": 8, "コメント": 46, "部品交換": 18, "発言日": 14, "開催": 40,
               "使用選手": 12, "使用ボート": 12, "投稿者": 12}
 
     wb = Workbook()
@@ -400,6 +410,21 @@ def build_motor_template_workbook():
     for i, t in enumerate(valid_titles, start=1):
         ws_list.cell(row=i, column=1, value=t)
     list_ref = f"リスト!$A$1:$A${len(valid_titles)}"
+
+    # 部品交換の選択肢はリストシートのB列
+    for i, t in enumerate(MOTOR_PARTS_CHOICES, start=1):
+        ws_list.cell(row=i, column=2, value=t)
+    parts_ref = f"リスト!$B$1:$B${len(MOTOR_PARTS_CHOICES)}"
+
+    parts_col = get_column_letter(MOTOR_EXCEL_HEADERS.index("部品交換") + 1)
+    dv_parts = DataValidation(type="list", formula1=f"={parts_ref}", allow_blank=True,
+                              showErrorMessage=True)
+    dv_parts.error = "リストから選択してください（部品名は完全一致が必要です）"
+    dv_parts.errorTitle = "部品交換が不正"
+    dv_parts.prompt = "ドロップダウンから部品を選択"
+    dv_parts.promptTitle = "部品交換"
+    ws.add_data_validation(dv_parts)
+    dv_parts.add(f"{parts_col}2:{parts_col}{max_rows + 1}")
 
     kaisai_col = get_column_letter(MOTOR_EXCEL_HEADERS.index("開催") + 1)
     dv_title = DataValidation(type="list", formula1=f"={list_ref}", allow_blank=True,
@@ -442,13 +467,16 @@ class MotorCommentExcelUpload(TemplateView):
     HEADER_MAP = {
         "号機": "machine_no",
         "コメント": "content",
+        "部品交換": "parts_exchange",
         "発言日": "created_at",
         "使用選手": "racer",
         "開催": "title",
         "投稿者": "author",
         "使用ボート": "boat_no",
     }
-    REQUIRED_HEADERS = ["号機", "コメント", "発言日"]
+    # コメント列は必須列から外す（部品交換だけの取込ファイルも許容）。
+    # ただし「コメント」「部品交換」のどちらの列も無いファイルはエラーにする。
+    REQUIRED_HEADERS = ["号機", "発言日"]
 
     def _valid_titles(self):
         # 入力フォームの開催ドロップダウン／テンプレのドロップダウンと同一の一覧
@@ -489,6 +517,8 @@ class MotorCommentExcelUpload(TemplateView):
         missing = [h for h in self.REQUIRED_HEADERS if h not in col_index]
         if missing:
             return self._error([f"必須列が見つかりません: {', '.join(missing)}"], **kwargs)
+        if "コメント" not in col_index and "部品交換" not in col_index:
+            return self._error(["「コメント」「部品交換」のどちらかの列が必要です。"], **kwargs)
 
         valid_titles = self._valid_titles()
         errors = []
@@ -508,8 +538,12 @@ class MotorCommentExcelUpload(TemplateView):
                 row_err.append("号機が不正（正の整数が必要）")
 
             content = _xl_str(cell("コメント"))
-            if not content:
-                row_err.append("コメントが空")
+            parts = _xl_str(cell("部品交換"))
+            # 入力フォームと同じルール: 部品交換があればコメントは空欄可
+            if not content and not parts:
+                row_err.append("コメントと部品交換が両方空（どちらかが必要）")
+            if parts and parts not in MOTOR_PARTS_CHOICES:
+                row_err.append(f"部品交換『{parts}』が部品リストと一致しない")
 
             said = _xl_date(cell("発言日"))
             if said is None:
@@ -535,7 +569,7 @@ class MotorCommentExcelUpload(TemplateView):
                 errors.append(f"{r_idx}行目: " + " / ".join(row_err))
             else:
                 parsed.append({
-                    "machine_no": machine_no, "content": content, "racer": racer,
+                    "machine_no": machine_no, "content": content, "parts": parts, "racer": racer,
                     "title": title, "author": author, "boat_no": boat_no, "said": said,
                 })
 
@@ -551,7 +585,7 @@ class MotorCommentExcelUpload(TemplateView):
                     obj = MotorComment(
                         machine_no=row["machine_no"], author=row["author"],
                         racer=row["racer"], content=row["content"], title=row["title"],
-                        boat_no=row["boat_no"], parts_exchange="", scheduled_at=None,
+                        boat_no=row["boat_no"], parts_exchange=row["parts"], scheduled_at=None,
                     )
                     obj.save()
                     # created_at を発言日で上書き（auto_now_add を回避）。

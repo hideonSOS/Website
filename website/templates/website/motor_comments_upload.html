@@ -6,9 +6,8 @@
 <div class="upload-wrap">
   <h1>モーター別情報 コメントExcel取込</h1>
   <p class="lead">
-    Excelファイルを選んでアップロードすると、コメントをまとめて追加登録します。
+    Excelファイルを選んでアップロードすると、コメント・部品交換をまとめて追加登録します。
     <strong>既存のデータは削除・変更しません（追加のみ）。</strong>
-    部品交換は取込対象外です（従来どおり手入力）。
   </p>
 
   {% if result %}
@@ -45,8 +44,9 @@
       </thead>
       <tbody>
         <tr><td>号機</td><td>必須</td><td>号機番号（正の整数）</td></tr>
-        <tr><td>コメント</td><td>必須</td><td>コメント本文</td></tr>
-        <tr><td>発言日</td><td>必須</td><td>コメントが発言された日（YYYY-MM-DD 等の日付）。時系列の並びに使用</td></tr>
+        <tr><td>コメント</td><td>※</td><td>コメント本文（部品交換を入力した行は空欄可。<strong>両方空はエラー</strong>）</td></tr>
+        <tr><td>部品交換</td><td>任意</td><td>テンプレートのドロップダウンから選択（部品リストと<strong>完全一致</strong>が必要）</td></tr>
+        <tr><td>発言日</td><td>必須</td><td>発言された日（YYYY-MM-DD / 2026/7/10 / 260710 等）。時系列の並びに使用</td></tr>
         <tr><td>開催</td><td>任意</td><td>入力フォームの開催一覧と<strong>完全一致</strong>が必要（不一致はエラー）</td></tr>
         <tr><td>使用選手</td><td>任意</td><td>10文字まで</td></tr>
         <tr><td>使用ボート</td><td>任意</td><td>数字3桁まで</td></tr>
