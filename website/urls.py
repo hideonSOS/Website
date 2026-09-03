@@ -13,6 +13,8 @@ from .views import (
     Motor_Comments_Total,
     MotorCommentExcelUpload,
     MotorCommentTemplateDownload,
+    MotorPartsExcelUpload,
+    MotorPartsTemplateDownload,
     grid_data_api,
 )
 
@@ -27,6 +29,8 @@ urlpatterns = [
     path("motor_comments/", Motor_Comments.as_view(), name="motor_comments"),
     path("motor_comments_upload/", MotorCommentExcelUpload.as_view(), name="motor_comments_upload"),
     path("motor_comments_template/", MotorCommentTemplateDownload.as_view(), name="motor_comments_template"),
+    path("motor_parts_upload/", MotorPartsExcelUpload.as_view(), name="motor_parts_upload"),
+    path("motor_parts_template/", MotorPartsTemplateDownload.as_view(), name="motor_parts_template"),
     path("motor_comments_index/", Motor_Comments_Index.as_view(), name="motor_comments_index"),
     path("api/machines/<int:machine_no>/posts", MotorCommentListCreateAPI.as_view(), name="motor_posts_api"),
     path("api/machines/<int:machine_no>/posts/<int:pk>", MotorCommentDetailAPI.as_view(), name="motor_post_detail_api"),
