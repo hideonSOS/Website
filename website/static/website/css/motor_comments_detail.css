@@ -210,3 +210,14 @@ h1 {
     font-size: 13px;  /* h1と同じサイズ（タブレットと共通） */
   }
 }
+
+/* 日付未設定データの警告（renderPosts が挿入） */
+.date-warn {
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}

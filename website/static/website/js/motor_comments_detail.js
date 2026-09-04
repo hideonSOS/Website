@@ -105,6 +105,17 @@ const API_BASE = "/website/api/machines";
     });
 
     output.innerHTML = "";
+
+    // 日付未設定の投稿があれば警告を出す（取込不備・古いデータに気づけるように）。
+    // 日付未設定の投稿は日付行が表示されず、期間フィルタにも掛からない。
+    const noDate = allPosts.filter(p => !p.scheduled_at).length;
+    if(noDate > 0){
+        const warn = document.createElement("div");
+        warn.className = "date-warn";
+        warn.textContent = `⚠ 日付未設定の投稿が ${noDate} 件あります（日付が表示されず、期間指定にも掛かりません）`;
+        output.appendChild(warn);
+    }
+
     output.appendChild(list);
     }
 

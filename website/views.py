@@ -277,8 +277,8 @@ def grid_data_api(request):
 # ------------------------------------------------------------
 # ・追加（新規作成）専用。既存データの削除・上書きは一切しない。
 # ・部品交換(parts_exchange)は取込対象外（手入力を継続）。
-# ・「発言日」列 → created_at に反映（auto_now_add を保存後 update で上書き）。
-#   コメントの流れは created_at の時系列で追跡するため。scheduled_at(入力日)は使わない。
+# ・「発言日」列 → created_at と scheduled_at の両方に反映。
+#   並び順は created_at、出力ページの日付表示・期間フィルタは scheduled_at を使うため。
 # ・厳格な all-or-nothing 検証: 1行でも不正なら何も保存しない。
 # ============================================================
 def _xl_str(v):
@@ -315,10 +315,25 @@ def _xl_date(v):
     """
     if v is None or v == "":
         return None
+    if isinstance(v, bool):
+        return None
     if isinstance(v, datetime):
         return v.date()
     if isinstance(v, date):
         return v
+    if isinstance(v, (int, float)):
+        # Excelの数値セル対応: 20260904 と打つと float(20260904.0) で届く。
+        # 日付書式が認識されない場合は生のシリアル値(例 46238)が来ることもある。
+        if 30000 <= v <= 80000:  # Excel日付シリアル値（1982〜2118年ごろ）
+            from openpyxl.utils.datetime import from_excel
+            try:
+                return from_excel(v).date()
+            except Exception:
+                return None
+        n = int(v)
+        if float(v) != n:
+            return None  # 上記以外の小数付き数値は日付として扱わない
+        v = str(n)
 
     # 全角の数字・記号を半角へ寄せる
     s = str(v).strip().translate(
@@ -650,10 +665,12 @@ class MotorCommentExcelUpload(TemplateView):
         try:
             with transaction.atomic():
                 for i, row in enumerate(parsed):
+                    # scheduled_at にも発言日を入れる: 出力ページの日付行と期間フィルタは
+                    # scheduled_at を参照するため、None だと日付が表示されない
                     obj = MotorComment(
                         machine_no=row["machine_no"], author=row["author"],
                         racer=row["racer"], content=row["content"], title=row["title"],
-                        boat_no=row["boat_no"], parts_exchange="", scheduled_at=None,
+                        boat_no=row["boat_no"], parts_exchange="", scheduled_at=row["said"],
                     )
                     obj.save()
                     # created_at を発言日で上書き（auto_now_add を回避）。
@@ -668,32 +685,10 @@ class MotorCommentExcelUpload(TemplateView):
             return self._error([f"保存中にエラーが発生しました: {e}"], **kwargs)
 
         context = self.get_context_data(**kwargs)
-        context["result"] = f"{len(parsed)}件のコメントを登録しました。"
+        dates = sorted({r["said"] for r in parsed})
+        span = dates[0].isoformat() if len(dates) == 1 else f"{dates[0].isoformat()}〜{dates[-1].isoformat()}"
+        context["result"] = f"{len(parsed)}件のコメントを登録しました。（発言日 {span}）"
         return self.render_to_response(context)
-
-
-def _parts_xl_date(v):
-    """部品交換取込用の日付パース（コメント取込の _xl_date には手を入れず拡張）。
-
-    Excelで日付列に数値を打つと openpyxl は float で返すため、
-    ・20260904 / 260904 などの数値入力（20260904.0 → "20260904" に直してパース）
-    ・日付書式が認識されず生のシリアル値（例 46238 = 2026-08-10）が来た場合
-    もここで吸収する。それ以外は _xl_date と同じ。
-    """
-    if isinstance(v, bool):
-        return None
-    if isinstance(v, (int, float)):
-        if 30000 <= v <= 80000:  # Excel日付シリアル値（1982〜2118年ごろ）
-            from openpyxl.utils.datetime import from_excel
-            try:
-                return from_excel(v).date()
-            except Exception:
-                return None
-        n = int(v)
-        if float(v) != n:
-            return None  # 小数付きの数値は日付として扱わない
-        v = str(n)
-    return _xl_date(v)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -783,7 +778,7 @@ class MotorPartsExcelUpload(TemplateView):
             elif parts not in MOTOR_PARTS_CHOICES:
                 row_err.append(f"部品交換『{parts}』が部品リストと一致しない")
 
-            said = _parts_xl_date(cell("発言日"))
+            said = _xl_date(cell("発言日"))
             if said is None:
                 row_err.append("発言日が不正（日付が必要）")
 
@@ -835,7 +830,9 @@ class MotorPartsExcelUpload(TemplateView):
             return self._error([f"保存中にエラーが発生しました: {e}"], **kwargs)
 
         context = self.get_context_data(**kwargs)
-        context["result"] = f"{len(parsed)}件の部品交換を登録しました。"
+        dates = sorted({r["said"] for r in parsed})
+        span = dates[0].isoformat() if len(dates) == 1 else f"{dates[0].isoformat()}〜{dates[-1].isoformat()}"
+        context["result"] = f"{len(parsed)}件の部品交換を登録しました。（発言日 {span}）"
         return self.render_to_response(context)
 
 
