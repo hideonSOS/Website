@@ -107,7 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.cells[11].textContent = '';
     });
     try {
-      const res = await fetch(`api/race_program/?rno=${raceSelect.value}`);
+      // ボーダー取得と同様にキャッシュを避ける。これが無いとブラウザが前回の応答を
+      // 使い回し、更新を押しても得点率が古いままになる（更新時刻だけ変わる）。
+      const res = await fetch(
+        `api/race_program/?rno=${raceSelect.value}&t=${Date.now()}`,
+        { cache: 'no-store' },
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const border = parseFloat(borderInput.value) || 0;

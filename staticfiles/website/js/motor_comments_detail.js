@@ -59,6 +59,8 @@ const API_BASE = "/website/api/machines";
         output.textContent = "条件に一致する投稿はありません";
         return;
     }
+    // 投稿者・開催を各カードに出すかどうか（ボタンが押されているときだけ）
+    const showMeta = document.getElementById("btnMeta")?.classList.contains("active");
 
     // 入力日（モーダルで指定した日付）の古い順（上）→新しい順（下）で時系列に流す。
     // 入力日が未設定の投稿はDB登録日で代用し、同日内はDB登録順に並べる。
@@ -77,14 +79,17 @@ const API_BASE = "/website/api/machines";
         card.className = "post-card";
 
         // ラベルなしで1データ1行。空のデータは行ごと省略する
+        // 投稿者(author)と開催シリーズ(title)は行数を抑えるため既定では出さず、
+        // 「投稿者・開催」ボタンが押されているときだけ表示する
+        // 並び順は 日付 → 選手 → コメント(部品交換)。補足情報はその後ろに置く
         const rows = [
-        { cls: "meta",    val: p.author },
-        { cls: "meta",    val: p.racer },
         { cls: "meta",    val: p.scheduled_at },
-        { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
-        { cls: "title",   val: p.title },
+        { cls: "racer",   val: p.racer },
         { cls: "parts",   val: p.parts_exchange },
-        { cls: "content", val: p.content }
+        { cls: "content", val: p.content },
+        { cls: "meta",    val: p.boat_no ? `${p.boat_no} ※使用ボート` : "" },
+        { cls: "meta",    val: showMeta ? p.author : "" },
+        { cls: "title",   val: showMeta ? p.title : "" }
         ];
         rows.forEach(r => {
         if(!r.val) return;
@@ -100,6 +105,17 @@ const API_BASE = "/website/api/machines";
     });
 
     output.innerHTML = "";
+
+    // 日付未設定の投稿があれば警告を出す（取込不備・古いデータに気づけるように）。
+    // 日付未設定の投稿は日付行が表示されず、期間フィルタにも掛からない。
+    const noDate = allPosts.filter(p => !p.scheduled_at).length;
+    if(noDate > 0){
+        const warn = document.createElement("div");
+        warn.className = "date-warn";
+        warn.textContent = `⚠ 日付未設定の投稿が ${noDate} 件あります（日付が表示されず、期間指定にも掛かりません）`;
+        output.appendChild(warn);
+    }
+
     output.appendChild(list);
     }
 

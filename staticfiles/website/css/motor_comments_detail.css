@@ -110,6 +110,7 @@ h1 {
 /* カード内の各行は色・サイズを統一 */
 .meta,
 .title,
+.racer,
 .parts,
 .content {
   font-size: 11px;  /* h1（モーター投稿一覧）と同じサイズ */
@@ -130,6 +131,29 @@ h1 {
 }
 @media (min-width: 768px) {
   .post-card .parts {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
+}
+
+/* 使用選手は時系列で追う手がかりになるため、他のmeta行より大きめにする */
+.post-card .racer {
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+}
+@media (min-width: 768px) {
+  .post-card .racer {
+    font-size: 15.6px; /* 本文(13px)の1.2倍 */
+  }
+}
+
+/* コメント本文も部品交換と同様に強調。ただし部品交換(黄色)と区別するため水色にする */
+.post-card .content {
+  color: #7dd3fc;
+  font-weight: 700;
+  font-size: 13.2px;   /* 本文(11px)の1.2倍 */
+  padding: 3px 0;      /* 上下に少しだけ余白 */
+}
+@media (min-width: 768px) {
+  .post-card .content {
     font-size: 15.6px; /* 本文(13px)の1.2倍 */
   }
 }
@@ -157,6 +181,7 @@ h1 {
 
   .meta,
   .title,
+  .racer,
   .parts,
   .content {
     font-size: 13px;  /* h1と同じサイズ */
@@ -179,8 +204,20 @@ h1 {
 
   .meta,
   .title,
+  .racer,
   .parts,
   .content {
     font-size: 13px;  /* h1と同じサイズ（タブレットと共通） */
   }
+}
+
+/* 日付未設定データの警告（renderPosts が挿入） */
+.date-warn {
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
 }

@@ -179,6 +179,7 @@ async function updatePost(machineNo, postId, payload){
 // 修正ボタン: 投稿内容をフォームに読み込み、更新モードへ
 function enterEditMode(p){
   editingPostId = p.id;
+  const machineInput = document.getElementById("machineInput");
   const authorInput  = document.getElementById("authorInput");
   const racerInput   = document.getElementById("titleInput");
   const dateInput    = document.getElementById("dateInput");
@@ -186,6 +187,7 @@ function enterEditMode(p){
   const partsInput   = document.getElementById("partsInput");
   const contentInput = document.getElementById("contentInput");
   const titleSel     = document.getElementById("titleSelect");
+  if(machineInput) machineInput.value = String(p.machine_no || currentMachine);
   if(authorInput)  authorInput.value  = p.author || "スタッフ";
   if(racerInput)   racerInput.value   = p.racer || "";
   if(dateInput)    dateInput.value    = p.scheduled_at || "";
@@ -204,11 +206,13 @@ function enterEditMode(p){
 // 更新モードを解除して新規投稿モードへ戻す
 function exitEditMode(){
   editingPostId = null;
+  const machineInput = document.getElementById("machineInput");
   const racerInput   = document.getElementById("titleInput");
   const boatInput    = document.getElementById("boatInput");
   const partsInput   = document.getElementById("partsInput");
   const contentInput = document.getElementById("contentInput");
   const titleSel     = document.getElementById("titleSelect");
+  if(machineInput && currentMachine != null) machineInput.value = String(currentMachine);
   if(racerInput)   racerInput.value   = "";
   if(boatInput)    boatInput.value    = "";
   if(partsInput)   partsInput.value   = "";
@@ -299,6 +303,18 @@ function populateBoatOptions(){
   }
 }
 
+// ====== 号機の選択肢（1〜100）を生成 ======
+function populateMachineOptions(){
+  const sel = document.getElementById("machineInput");
+  if(!sel || sel.options.length > 0) return; // 生成済みなら何もしない
+  for(let i = 1; i <= 100; i++){
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = `${i}号機`;
+    sel.appendChild(opt);
+  }
+}
+
 // ====== モーダル制御 ======
 function bindPostForm(){
   const form = document.getElementById("postForm");
@@ -321,7 +337,15 @@ function bindPostForm(){
       titleSelect?.focus();
       return;
     }
+    const machineInput = document.getElementById("machineInput");
+    const machineNoVal = parseInt(machineInput?.value, 10);
+    if(!Number.isInteger(machineNoVal) || machineNoVal < 1 || machineNoVal > 100){
+      alert("号機を選択してください（1〜100）");
+      machineInput?.focus();
+      return;
+    }
     const payload = {
+      machine_no: machineNoVal,
       title: selectedTitleText,   // DB保存用にテキストを渡す
       author: (authorInput?.value || "").trim() || "匿名",
       racer: (racerInput?.value || "").trim(),
@@ -344,15 +368,21 @@ function bindPostForm(){
     try{
       if(editingPostId != null){
         // 更新モード → その場で更新し、モーダル内の一覧を再描画（遷移しない）
+        // 号機を変更した場合、そのコメントは移動先の号機に移り、現在の一覧からは消える
+        const movedTo = (payload.machine_no !== currentMachine) ? payload.machine_no : null;
         await updatePost(currentMachine, editingPostId, payload);
         exitEditMode();
         await loadPostsIntoList(currentMachine);
+        if(movedTo != null){
+          alert(`このコメントを ${currentMachine}号機 → ${movedTo}号機 に移動しました。`);
+        }
       }else{
-        // 新規投稿 → モーダルを閉じて、その号機の投稿一覧ページへ遷移
-        await createPost(currentMachine, payload);
+        // 新規投稿 → モーダルを閉じて、投稿先の号機の投稿一覧ページへ遷移
+        const res = await createPost(currentMachine, payload);
+        const targetMachine = (res && res.machine_no) ? res.machine_no : payload.machine_no;
         const dlg = document.getElementById("postsDialog");
         if(dlg && dlg.open) dlg.close();
-        window.location.href = `/website/machines/${currentMachine}/`;
+        window.location.href = `/website/machines/${targetMachine}/`;
       }
     }catch(e){
       // createPost / updatePost でアラート済み
@@ -375,7 +405,10 @@ async function openPosts(machineNo){
   const linkEl = document.getElementById("openPageLink");
 
   currentMachine = machineNo;
+  populateMachineOptions();
   exitEditMode();   // 前回の修正状態が残っていてもリセット
+  const machineInput = document.getElementById("machineInput");
+  if(machineInput) machineInput.value = String(machineNo);
   if(titleEl) titleEl.textContent = `${machineNo}号機`;
 
   //if(linkEl) linkEl.href = `/machines/${machineNo}/posts`;
@@ -411,8 +444,9 @@ async function openPosts(machineNo){
   const cancelBtn = document.getElementById("cancelEdit");
   if(cancelBtn) cancelBtn.addEventListener("click", exitEditMode);
 
-  // 使用ボートの選択肢を生成
+  // 使用ボート・号機の選択肢を生成
   populateBoatOptions();
+  populateMachineOptions();
 
   // グリッドを生成
   await generateGrid();
