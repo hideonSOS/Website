@@ -6,9 +6,6 @@ __pycache__/
 venv/
 .env/
 
-# ローカル環境変数（秘密情報を含むためコミットしない）
-.env
-
 # Ignore database
 db.sqlite3
 myproject/db.sqlite3

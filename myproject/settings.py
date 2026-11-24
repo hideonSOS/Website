@@ -5,57 +5,22 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# ============================================================
-# 設定は環境変数で上書きできる。既定値は「本番で安全側」に倒してあるので、
-# 本番は git pull と再起動だけでよい（環境変数の設定忘れでサイトが落ちない）。
-# 開発機は BASE_DIR/.env に DJANGO_DEBUG=True を置く（.env は git 管理外）。
-# ============================================================
-def _load_dotenv(path):
-    """.env があれば環境変数へ読み込む。未設定のキーだけ入れる（外部ライブラリ不要）。"""
-    if not path.exists():
-        return
-    for line in path.read_text(encoding='utf-8').splitlines():
-        line = line.strip()
-        if not line or line.startswith('#') or '=' not in line:
-            continue
-        key, _, value = line.partition('=')
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-_load_dotenv(BASE_DIR / '.env')
-
-
-def _env_bool(name, default=False):
-    return os.environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
-
-
-def _env_list(name, default):
-    return [v.strip() for v in os.environ.get(name, default).split(',') if v.strip()]
-
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# 既定値は過去に公開リポジトリへコミット済みで秘密ではない。
-# 本番では環境変数 DJANGO_SECRET_KEY に新しい値を設定して差し替えること。
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-or8g@xb!)b1wp*w2v5#c8j*ij8_6)9^1*2&z4!9e4zv#*u7fl0',
-)
+SECRET_KEY = 'django-insecure-or8g@xb!)b1wp*w2v5#c8j*ij8_6)9^1*2&z4!9e4zv#*u7fl0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# 既定 False。True だとエラー画面に設定内容が出て誰でも読めてしまう。
-DEBUG = _env_bool('DJANGO_DEBUG', False)
+DEBUG = True
 
-# '*' をやめて実際に使うホストだけ許可する（Host ヘッダー偽装対策）。
-# ドメイン取得後は DJANGO_ALLOWED_HOSTS に追記する。
-ALLOWED_HOSTS = _env_list(
-    'DJANGO_ALLOWED_HOSTS',
-    '160.251.171.159,localhost,127.0.0.1',
-)
+ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = _env_list(
-    'DJANGO_CSRF_TRUSTED_ORIGINS',
-    'http://160.251.171.159,http://localhost,http://127.0.0.1',
-)
+CSRF_TRUSTED_ORIGINS = [
+    'http://160.251.171.159',
+    'http://localhost',
+    'http://127.0.0.1',
+]
 
 
 # Application definition
