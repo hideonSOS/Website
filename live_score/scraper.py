@@ -25,6 +25,14 @@ SCORE_CSV_PATH = (
 TITLE_XLSX_PATH = Path(__file__).resolve().parent / 'static' / 'live_score' / 'title.xlsx'
 RACELIST_URL    = 'https://www.boatrace.jp/owpc/pc/race/racelist'
 
+# boatrace.jp は Akamai のボット対策で、ブラウザらしいヘッダーが無いと 403 を返す。
+# 切り分けた結果 Accept-Language が必須（User-Agent だけでは 403）。2026-11-24 確認。
+HTTP_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+}
+
 # 走目列の定義（表示順）
 RUN_COLUMNS = [
     '1日目_1走', '1日目_2走',
@@ -59,12 +67,9 @@ def _scrape_current_day() -> int | None:
     if _day_cache['value'] is not None and now < _day_cache['expires']:
         return _day_cache['value']
 
-    http_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-    }
     try:
         params = {'rno': 1, 'jcd': VENUE_CODE, 'hd': get_today()}
-        res = requests.get(RACELIST_URL, params=params, headers=http_headers, timeout=20)
+        res = requests.get(RACELIST_URL, params=params, headers=HTTP_HEADERS, timeout=20)
         res.raise_for_status()
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text, 'html.parser')
@@ -141,10 +146,7 @@ def _load_score_csv():
 
 def _scrape_score_table():
     """住之江競艇の得点率ページをスクレイピングして DataFrame を返す。"""
-    http_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-    }
-    res = requests.get(RANK_URL, headers=http_headers, timeout=20)
+    res = requests.get(RANK_URL, headers=HTTP_HEADERS, timeout=20)
     res.raise_for_status()
     res.encoding = res.apparent_encoding or 'utf-8'
 
@@ -240,7 +242,7 @@ def get_race_program(race_no):
     params = {'rno': race_no, 'jcd': VENUE_CODE, 'hd': today}
     for attempt in range(2):
         try:
-            res = requests.get(RACELIST_URL, params=params, timeout=20)
+            res = requests.get(RACELIST_URL, params=params, headers=HTTP_HEADERS, timeout=20)
             res.raise_for_status()
             return _parse_race_program(res.text)
         except requests.exceptions.RequestException as e:
